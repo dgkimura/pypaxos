@@ -1,7 +1,7 @@
 # learner.py
 
 
-class Learner(BaseRole):
+class Learner(Role):
     def __init__(self, channel):
         self._channel = channel
 

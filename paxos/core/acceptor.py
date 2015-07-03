@@ -1,7 +1,7 @@
 # acceptor.py
 
 
-class Acceptor(BaseRole):
+class Acceptor(Role):
     def __init__(self, channel):
         self._channel = channel
         self._proposal_id

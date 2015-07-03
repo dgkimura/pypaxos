@@ -2,7 +2,7 @@
 from paxos.core import baserole
 
 
-class Proposer(BaseRole):
+class Proposer(Role):
     def __init__(self, channel):
         self._channel = channel
         self._proposal_id

@@ -1,4 +1,6 @@
 # acceptor.py
+from paxos.core.role import Role
+from paxos.net.message import Prepare, Accept
 
 
 class Acceptor(Role):
@@ -6,12 +8,12 @@ class Acceptor(Role):
         self._channel = channel
         self._proposal_id
 
-    @receive.register(Prepare)
+    @Role.receive.register(Prepare)
     def _(self, message):
         reply = Promise()
         self._channel.unicast(reply)
 
-    @receive.register(Accept)
+    @Role.receive.register(Accept)
     def _(self, message):
         reply = Accepted()
         self._channel.broadcast(reply)

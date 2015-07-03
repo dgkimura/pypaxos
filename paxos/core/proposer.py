@@ -1,5 +1,6 @@
 # proposer.py
-from paxos.core import baserole
+from paxos.core.role import Role
+from paxos.net.message import Request, Promise, Accepted
 
 
 class Proposer(Role):
@@ -7,16 +8,16 @@ class Proposer(Role):
         self._channel = channel
         self._proposal_id
 
-    @receive.register(Request)
+    @Role.receive.register(Request)
     def _(self, message):
         reply = Prepare()
         self._channel.broadcast(reply)
 
-    @receive.register(Promise)
+    @Role.receive.register(Promise)
     def _(self, message):
         reply = Accept()
         self._channel.broadcast(reply)
 
-    @receive.register(Accepted)
+    @Role.receive.register(Accepted)
     def _(self, message):
         pass

@@ -11,6 +11,11 @@ You can install dependencies through pip.
 $ pip install -r requirements.txt
 ```
 
+You can install package using setup tools.
+```
+$ python setup.py install
+```
+
 Algorithm Details
 ==============
 

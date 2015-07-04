@@ -1,8 +1,11 @@
 # channel.py
-
-
-import cPickle as pickle
 from paxos.net.socket import Socket
+
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 
 class Channel(object):

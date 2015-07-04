@@ -1,6 +1,4 @@
 # proposer.py
-from functools import singledispatch
-
 from paxos.core.role import Role
 from paxos.net.message import Request, Prepare, Promise, Accept, Accepted
 

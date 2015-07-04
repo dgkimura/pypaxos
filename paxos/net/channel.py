@@ -15,13 +15,11 @@ class Channel(object):
         self.socket = socket or Socket()
 
     def unicast(self, message):
-        self.socket.send(message.receiver,
-                         pickle.dumps(message))
+        self.socket.send(message.receiver, pickle.dumps(message))
 
     def broadcast(self, message):
         for r in self.replicas:
-            self.socket.send(r,
-                             pickle.dumps(message))
+            self.socket.send(r, pickle.dumps(message))
 
     def listen(self):
         return self.socket.receive(self.host)

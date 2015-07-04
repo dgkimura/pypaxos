@@ -13,7 +13,7 @@ class Socket(object):
     def receive(self, ip):
         # TODO: non-blocking w/gevent, greenlet, or zeromq
         sock = socket(AF_INET, SOCK_STREAM)
-        sock.bind((ip, port))
+        sock.bind((ip, Socket.__PORT))
         sock.listen(1)
 
         conn, addr = sock.accept()

@@ -24,6 +24,4 @@ class Channel(object):
                              pickle.dumps(message))
 
     def listen(self):
-        self.socket.receiver(self.host)
-
-        # TODO: send message to paxos node
+        return self.socket.receive(self.host)

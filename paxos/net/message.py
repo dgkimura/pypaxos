@@ -6,6 +6,10 @@ class Message(object):
         self.sender = sender
         self.receiver = receiver
 
+    @classmethod
+    def create(klass, sender=None, receiver=None):
+        return klass(sender, receiver)
+
 
 class Request(Message):
     pass

@@ -1,6 +1,6 @@
 # learner.py
 from paxos.core.role import Role
-from paxos.net.message import Accepted
+from paxos.net.message import Accepted, Response
 
 
 class Learner(Role):
@@ -9,5 +9,5 @@ class Learner(Role):
 
     @Role.receive.register(Accepted)
     def _(self, message):
-        reply = Response()
+        reply = Response.create()
         self._channel.unicast(reply)

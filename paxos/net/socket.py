@@ -1,27 +1,30 @@
 from socket import socket, AF_INET, SOCK_STREAM
 
 
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
+
 class Socket(object):
     __PORT = 8081
-    __MESSAGE_SIZE = 4
+    __MAX_MESSAGE_SIZE = 65536
+    __MAX_BACKLOG_SIZE = 5
+
+    def __init__(self, serializer=pickle):
+        self._serializer = serializer
 
     def send(self, ip, data):
         sock = socket(AF_INET, SOCK_STREAM)
-        sock.connect((ip, port))
-        sock.sendall(data)
+        sock.connect((ip, Socket.__PORT))
+        sock.sendall(self._serializer.dumps(data))
 
     def receive(self, ip):
-        # TODO: non-blocking w/gevent, greenlet, or zeromq
         sock = socket(AF_INET, SOCK_STREAM)
         sock.bind((ip, Socket.__PORT))
-        sock.listen(1)
-
+        sock.listen(Socket.__MAX_BACKLOG_SIZE)
         conn, addr = sock.accept()
 
-        message_size = int(conn.recv(Socket.__MESSAGE_SIZE))
-        data = ""
-        while len(data) < message_size:
-            packet = conn.recv(message_size)
-            data += packet
-
-        return pickle.loads(data)
+        data = conn.recv(Socket.__MAX_MESSAGE_SIZE)
+        return self._serializer.loads(data)

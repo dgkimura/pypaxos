@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from socket import socket, AF_INET, SOCK_STREAM
 
 
@@ -16,15 +17,23 @@ class Socket(object):
         self._serializer = serializer
 
     def send(self, ip, data):
-        sock = socket(AF_INET, SOCK_STREAM)
-        sock.connect((ip, Socket.__PORT))
-        sock.sendall(self._serializer.dumps(data))
+        _socket = socket(AF_INET, SOCK_STREAM)
+        print("SENDING {0}".format(data))
+        _socket.connect(('', Socket.__PORT))
+        _socket.sendall(self._serializer.dumps(data))
+        _socket.close()
 
-    def receive(self, ip):
-        sock = socket(AF_INET, SOCK_STREAM)
-        sock.bind((ip, Socket.__PORT))
-        sock.listen(Socket.__MAX_BACKLOG_SIZE)
-        conn, addr = sock.accept()
+    def receive(self, listener):
+        pool = ThreadPoolExecutor(128)
+        _socket = socket(AF_INET, SOCK_STREAM)
+        _socket.bind(('', Socket.__PORT))
+        _socket.listen(Socket.__MAX_BACKLOG_SIZE)
+        while True:
+            client_sock, client_addr = _socket.accept()
+            pool.submit(self.send_to_listener, client_sock, client_addr, listener)
 
-        data = conn.recv(Socket.__MAX_MESSAGE_SIZE)
-        return self._serializer.loads(data)
+    def send_to_listener(self, sock, client_addr, listener):
+        data = sock.recv(Socket.__MAX_MESSAGE_SIZE)
+        sock.close()
+        print("Received {0}".format(data))
+        listener.receive(self._serializer.loads(data))

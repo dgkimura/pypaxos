@@ -13,7 +13,7 @@ def main():
     channel = Channel(host, replicas)
 
     node = Node(channel)
-    node.start()
+    channel.connect(node)
 
     message = Request(host, host)
     channel.unicast(message)

@@ -18,7 +18,6 @@ class Socket(object):
 
     def send(self, ip, data):
         _socket = socket(AF_INET, SOCK_STREAM)
-        print("SENDING {0}".format(data))
         _socket.connect(('', Socket.__PORT))
         _socket.sendall(self._serializer.dumps(data))
         _socket.close()
@@ -35,5 +34,4 @@ class Socket(object):
     def send_to_listener(self, sock, client_addr, listener):
         data = sock.recv(Socket.__MAX_MESSAGE_SIZE)
         sock.close()
-        print("Received {0}".format(data))
         listener.receive(self._serializer.loads(data))

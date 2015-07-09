@@ -12,8 +12,8 @@ class TestAcceptor(TestCase):
         mock_create_promise.return_value = message
 
         mock_channel = Mock()
-        role = Acceptor(mock_channel)
-        role.receive(Prepare.create())
+        role = Acceptor()
+        role.receive(Prepare.create(), mock_channel)
 
         mock_channel.unicast.assert_called_with(message)
 
@@ -23,8 +23,8 @@ class TestAcceptor(TestCase):
         mock_create_accepted.return_value = message
 
         mock_channel = Mock()
-        role = Acceptor(mock_channel)
-        role.receive(Accept.create())
+        role = Acceptor()
+        role.receive(Accept.create(), mock_channel)
 
         mock_channel.broadcast.assert_called_with(message)
 

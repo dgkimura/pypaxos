@@ -12,8 +12,8 @@ class TestLearner(TestCase):
         mock_create_response.return_value = message
 
         mock_channel = Mock()
-        role = Learner(mock_channel)
-        role.receive(Accepted.create())
+        role = Learner()
+        role.receive(Accepted.create(), mock_channel)
 
         mock_channel.unicast.assert_called_with(message)
 

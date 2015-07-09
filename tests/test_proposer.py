@@ -12,8 +12,8 @@ class TestProposer(TestCase):
         mock_create_prepare.return_value = message
 
         mock_channel = Mock()
-        role = Proposer(mock_channel)
-        role.receive(Request.create())
+        role = Proposer()
+        role.receive(Request.create(), mock_channel)
 
         mock_channel.broadcast.assert_called_with(message)
 
@@ -23,8 +23,8 @@ class TestProposer(TestCase):
         mock_create_accept.return_value = message
 
         mock_channel = Mock()
-        role = Proposer(mock_channel)
-        role.receive(Promise.create())
+        role = Proposer()
+        role.receive(Promise.create(), mock_channel)
 
         mock_channel.broadcast.assert_called_with(message)
 

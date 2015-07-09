@@ -5,8 +5,7 @@ from paxos.net.socket import Socket
 
 
 class Channel(object):
-    def __init__(self, host, replicas, socket=None):
-        self.host = host
+    def __init__(self, replicas, socket=None):
         self.replicas = replicas
         self.socket = socket or Socket()
 

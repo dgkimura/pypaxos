@@ -10,7 +10,7 @@ from paxos.net.message import Request, Prepare, Promise, Accept, Accepted
 def main():
     host = socket.gethostbyname(socket.gethostname())
     replicas = [socket.gethostbyname(socket.gethostname())]
-    channel = Channel(host, replicas)
+    channel = Channel(replicas)
 
     node = Node()
     channel.connect(node)

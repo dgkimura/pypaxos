@@ -12,7 +12,7 @@ def main():
     replicas = [socket.gethostbyname(socket.gethostname())]
     channel = Channel(host, replicas)
 
-    node = Node(channel)
+    node = Node()
     channel.connect(node)
 
     message = Request(host, host)

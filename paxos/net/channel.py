@@ -24,6 +24,6 @@ class Channel(object):
         listener's receive method. Socket receive is a blocking call.
 
         """
-        t = Thread(target=self.socket.receive, args=(listener,))
+        t = Thread(target=self.socket.receive, args=(listener, self))
         t.daemon = True
         t.start()

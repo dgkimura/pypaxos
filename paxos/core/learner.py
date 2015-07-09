@@ -4,10 +4,8 @@ from paxos.net.message import Accepted, Response
 
 
 class Learner(Role):
-    def __init__(self, channel):
-        self._channel = channel
-
     @Role.receive.register(Accepted)
-    def _(self, message):
+    def _(self, message, channel):
+        print("RECEIVED message {0}".format(message))
         reply = Response.create()
-        self._channel.unicast(reply)
+        channel.unicast(reply)

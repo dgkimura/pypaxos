@@ -8,5 +8,4 @@ from paxos.core.proposer import Proposer
 
 
 class Node(Proposer, Acceptor, Learner):
-    def __init__(self, channel):
-        self._channel = channel
+    pass

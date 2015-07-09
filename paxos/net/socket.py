@@ -22,16 +22,16 @@ class Socket(object):
         _socket.sendall(self._serializer.dumps(data))
         _socket.close()
 
-    def receive(self, listener):
+    def receive(self, listener, channel):
         pool = ThreadPoolExecutor(128)
         _socket = socket(AF_INET, SOCK_STREAM)
         _socket.bind(('', Socket.__PORT))
         _socket.listen(Socket.__MAX_BACKLOG_SIZE)
         while True:
-            client_sock, client_addr = _socket.accept()
-            pool.submit(self.send_to_listener, client_sock, client_addr, listener)
+            client_socket, client_address = _socket.accept()
+            pool.submit(self._route_to_listener, client_socket, listener, channel)
 
-    def send_to_listener(self, sock, client_addr, listener):
-        data = sock.recv(Socket.__MAX_MESSAGE_SIZE)
-        sock.close()
-        listener.receive(self._serializer.loads(data))
+    def _route_to_listener(self, _socket, listener, channel):
+        data = _socket.recv(Socket.__MAX_MESSAGE_SIZE)
+        _socket.close()
+        listener.receive(self._serializer.loads(data), channel)

@@ -1,3 +1,4 @@
+from functools import partial
 from unittest import TestCase, main
 from unittest.mock import Mock, patch
 
@@ -6,25 +7,26 @@ from paxos.net.message import Prepare, Promise, Accept, Accepted
 
 
 class TestAcceptor(TestCase):
-    @patch.object(Promise, "create")
-    def test_receive_prepare(self, mock_create_promise):
-        message = Mock()
-        mock_create_promise.return_value = message
+    def setUp(self):
+        self.create_reply = lambda m, sender=None, receiver=None: m
 
+    def test_receive_prepare(self):
         mock_channel = Mock()
         role = Acceptor()
-        role.receive(Prepare.create(), mock_channel)
+
+        message = Mock()
+        role.receive(Prepare.create(), mock_channel,
+                     partial(self.create_reply, m=message))
 
         mock_channel.unicast.assert_called_with(message)
 
-    @patch.object(Accepted, "create")
-    def test_receive_accept(self, mock_create_accepted):
-        message = Mock()
-        mock_create_accepted.return_value = message
-
+    def test_receive_accept(self):
         mock_channel = Mock()
         role = Acceptor()
-        role.receive(Accept.create(), mock_channel)
+
+        message = Mock()
+        role.receive(Accept.create(), mock_channel,
+                     partial(self.create_reply, m=message))
 
         mock_channel.broadcast.assert_called_with(message)
 

@@ -5,7 +5,9 @@ from paxos.utils.decorators import methoddispatch
 class Role(object):
     def __init__(self, author="anonymous"):
         self.current_proposal = Proposal(author, 0)
-        self.last_proposal = Proposal(author, -1)
+
+        self.received_proposal = Proposal(author, 0)
+        self.accepted_proposal = Proposal(author, 0)
 
     @methoddispatch
     def receive(self, message, channel):

@@ -16,7 +16,7 @@ class TestProposer(TestCase):
         self.assertTrue(type(sent_message) is Prepare)
         self.assertEqual(sent_message.proposal.number, 1)
 
-    def test_receive_request_sends_subsequent_propsal(self):
+    def test_receive_request_sends_subsequent_proposal(self):
         channel = HistoryChannel()
         role = Proposer()
 

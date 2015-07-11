@@ -29,8 +29,16 @@ class Proposer(Role):
 
         """
         print("RECEIVED message {0}".format(message))
-        reply = create_reply(sender=message.receiver)
-        channel.broadcast(reply)
+        self.received_promises.setdefault(message.proposal, set()) \
+            .add(message.sender)
+
+        minimum_quorum = len(channel.replicas) // 2 + 1
+        received_promises = len(self.received_promises.get(message.proposal))
+
+        if received_promises >= minimum_quorum:
+            reply = create_reply(sender=message.receiver,
+                                 proposal=message.proposal)
+            channel.broadcast(reply)
 
     #@Role.receive.register(Accepted)
     #def _(self, message):

@@ -3,6 +3,7 @@ from unittest import TestCase, main
 from paxos.core.proposer import Proposer
 from paxos.net.history_channel import HistoryChannel
 from paxos.net.message import Request, Prepare, Promise, Accept, Accepted
+from paxos.net.proposal import Proposal
 
 
 class TestProposer(TestCase):
@@ -27,13 +28,23 @@ class TestProposer(TestCase):
         sent_message = channel.broadcast_messages[-1]
         self.assertEqual(sent_message.proposal.number, 3)
 
-    def test_receive_promise(self):
-        channel = HistoryChannel()
+    def test_receive_promise_reaches_quorum(self):
+        channel = HistoryChannel(replicas=['A', 'B', 'C'])
         role = Proposer()
 
-        role.receive(Promise.create(), channel)
+        role.receive(Promise.create(proposal=Proposal('A', 1), sender='A'), channel)
+        role.receive(Promise.create(proposal=Proposal('A', 1), sender='B'), channel)
+        role.receive(Promise.create(proposal=Proposal('A', 1), sender='C'), channel)
 
-        self.assertTrue(type(channel.broadcast_messages[0]) is Accept)
+        self.assertTrue(type(channel.broadcast_messages[-1]) is Accept)
+
+    def test_receive_promise_below_quorum(self):
+        channel = HistoryChannel(replicas=['A', 'B', 'C'])
+        role = Proposer()
+
+        role.receive(Promise.create(proposal=Proposal('A', 1), sender='A'), channel)
+
+        self.assertEqual(len(channel.broadcast_messages), 0)
 
 
 if __name__ == "__main__":

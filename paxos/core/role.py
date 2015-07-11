@@ -9,6 +9,8 @@ class Role(object):
         self.received_proposal = Proposal(author, 0)
         self.accepted_proposal = Proposal(author, 0)
 
+        self.received_promises = dict()
+
     @methoddispatch
     def receive(self, message, channel):
         error = "No function handles message: {0}.".format(message)

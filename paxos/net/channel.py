@@ -14,6 +14,7 @@ class Channel(object):
 
     def broadcast(self, message):
         for r in self.replicas:
+            message.receiver = r
             self.socket.send(r, message)
 
     def connect(self, listener):

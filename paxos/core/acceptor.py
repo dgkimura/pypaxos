@@ -19,6 +19,7 @@ class Acceptor(Role):
         if message.proposal.number >= self.received_proposal.number:
             reply = create_reply(sender=message.receiver,
                                  receiver=message.sender,
+                                 proposal=message.proposal,
                                  accepted_proposal=self.accepted_proposal)
             channel.unicast(reply)
             self.received_proposal = message.proposal

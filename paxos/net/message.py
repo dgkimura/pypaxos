@@ -31,5 +31,9 @@ class Accepted(Message):
     pass
 
 
+class Nack(Message):
+    pass
+
+
 class Response(Message):
     pass

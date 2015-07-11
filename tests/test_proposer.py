@@ -1,34 +1,26 @@
-from functools import partial
 from unittest import TestCase, main
-from unittest.mock import Mock, patch
 
 from paxos.core.proposer import Proposer
+from paxos.net.history_channel import HistoryChannel
 from paxos.net.message import Request, Prepare, Promise, Accept, Accepted
 
 
 class TestProposer(TestCase):
-    def setUp(self):
-        self.create_reply = lambda m, sender=None, receiver=None: m
-
     def test_receive_request(self):
-        mock_channel = Mock()
+        channel = HistoryChannel()
         role = Proposer()
 
-        message = Mock()
-        role.receive(Request.create(), mock_channel,
-                     partial(self.create_reply, m=message))
+        role.receive(Request.create(), channel)
 
-        mock_channel.broadcast.assert_called_with(message)
+        self.assertTrue(type(channel.broadcast_messages[0]) is Prepare)
 
     def test_receive_promise(self):
-        mock_channel = Mock()
+        channel = HistoryChannel()
         role = Proposer()
 
-        message = Mock()
-        role.receive(Promise.create(), mock_channel,
-                     partial(self.create_reply, m=message))
+        role.receive(Promise.create(), channel)
 
-        mock_channel.broadcast.assert_called_with(message)
+        self.assertTrue(type(channel.broadcast_messages[0]) is Accept)
 
 
 if __name__ == "__main__":

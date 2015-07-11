@@ -1,24 +1,18 @@
-from functools import partial
 from unittest import TestCase, main
-from unittest.mock import Mock, patch
 
 from paxos.core.learner import Learner
+from paxos.net.history_channel import HistoryChannel
 from paxos.net.message import Accepted, Response
 
 
 class TestLearner(TestCase):
-    def setUp(self):
-        self.create_reply = lambda m, sender=None, receiver=None: m
-
     def test_receive_accepted(self):
-        mock_channel = Mock()
+        channel = HistoryChannel()
         role = Learner()
 
-        message = Mock()
-        role.receive(Accepted.create(), mock_channel,
-                     partial(self.create_reply, message))
+        role.receive(Accepted.create(), channel)
 
-        mock_channel.unicast.assert_called_with(message)
+        self.assertTrue(type(channel.unicast_messages[0]) is Response)
 
 
 if __name__ == "__main__":

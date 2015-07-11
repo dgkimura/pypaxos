@@ -2,13 +2,14 @@
 
 
 class Message(object):
-    def __init__(self, sender, receiver):
+    def __init__(self, sender, receiver, proposal=None):
         self.sender = sender
         self.receiver = receiver
+        self.proposal = proposal
 
     @classmethod
-    def create(klass, sender=None, receiver=None):
-        return klass(sender, receiver)
+    def create(klass, sender=None, receiver=None, proposal=None):
+        return klass(sender, receiver, proposal)
 
 
 class Request(Message):

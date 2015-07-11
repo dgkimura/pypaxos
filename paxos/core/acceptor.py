@@ -7,8 +7,11 @@ class Acceptor(Role):
     @Role.receive.register(Prepare)
     def _(self, message, channel, create_reply=Promise.create):
         print("RECEIVED message {0}".format(message))
-        reply = create_reply(sender=message.receiver, receiver=message.sender)
-        channel.unicast(reply)
+        if message.proposal.number >= self.last_proposal.number:
+            reply = create_reply(sender=message.receiver,
+                                 receiver=message.sender)
+            channel.unicast(reply)
+            self.last_proposal = message.proposal
 
     @Role.receive.register(Accept)
     def _(self, message, channel, create_reply=Accepted.create):

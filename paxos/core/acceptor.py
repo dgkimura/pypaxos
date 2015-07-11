@@ -1,6 +1,6 @@
 # acceptor.py
 from paxos.core.role import Role
-from paxos.net.message import Prepare, Promise, Accept, Accepted
+from paxos.net.message import Prepare, Promise, Accept, Nack, Accepted
 
 
 class Acceptor(Role):
@@ -12,6 +12,10 @@ class Acceptor(Role):
                                  receiver=message.sender)
             channel.unicast(reply)
             self.last_proposal = message.proposal
+        else:
+            reply = Nack.create(sender=message.receiver,
+                                receiver=message.sender)
+            channel.unicast(reply)
 
     @Role.receive.register(Accept)
     def _(self, message, channel, create_reply=Accepted.create):

@@ -11,3 +11,9 @@ class Role(object):
     def receive(self, message, channel):
         error = "No function handles message: {0}.".format(message)
         raise NotImplementedError(error)
+
+    @property
+    def next_proposal(self):
+        author, number = self.current_proposal
+        self.current_proposal = Proposal(author, number + 1)
+        return self.current_proposal

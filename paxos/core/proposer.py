@@ -13,7 +13,8 @@ class Proposer(Role):
 
         """
         print("RECEIVED message {0}".format(message))
-        reply = create_reply(sender=message.receiver)
+        reply = create_reply(sender=message.receiver,
+                             proposal=self.next_proposal)
         channel.broadcast(reply)
 
     @Role.receive.register(Promise)

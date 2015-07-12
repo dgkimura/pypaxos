@@ -6,7 +6,7 @@ class Role(object):
     def __init__(self, author="anonymous"):
         self.current_proposal = Proposal(author, 0)
 
-        self.received_proposal = Proposal(author, 0)
+        self.prepared_proposal = Proposal(author, 0)
         self.accepted_proposal = Proposal(author, 0)
 
         self.received_promises = dict()

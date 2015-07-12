@@ -16,13 +16,13 @@ class Acceptor(Role):
 
         """
         print("RECEIVED message {0}".format(message))
-        if message.proposal.number >= self.received_proposal.number:
+        if message.proposal.number >= self.prepared_proposal.number:
             reply = create_reply(sender=message.receiver,
                                  receiver=message.sender,
                                  proposal=message.proposal,
                                  accepted_proposal=self.accepted_proposal)
             channel.unicast(reply)
-            self.received_proposal = message.proposal
+            self.prepared_proposal = message.proposal
         else:
             reply = Nack.create(sender=message.receiver,
                                 receiver=message.sender)
@@ -38,7 +38,7 @@ class Acceptor(Role):
 
         """
         print("RECEIVED message {0}".format(message))
-        if message.proposal.number >= self.received_proposal.number:
+        if message.proposal.number >= self.prepared_proposal.number:
             reply = create_reply(sender=message.receiver)
             channel.broadcast(reply)
 

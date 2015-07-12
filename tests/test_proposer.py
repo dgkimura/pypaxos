@@ -43,6 +43,8 @@ class TestProposer(TestCase):
         role = Proposer()
 
         role.receive(Promise.create(proposal=Proposal('A', 1), sender='A'), channel)
+        role.receive(Promise.create(proposal=Proposal('A', 1), sender='A'), channel)
+        role.receive(Promise.create(proposal=Proposal('A', 1), sender='A'), channel)
 
         self.assertEqual(len(channel.broadcast_messages), 0)
 

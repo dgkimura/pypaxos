@@ -43,10 +43,22 @@ class TestProposer(TestCase):
         role = Proposer()
 
         role.receive(Promise.create(proposal=Proposal('A', 1), sender='A'), channel)
+
+        self.assertEqual(len(channel.broadcast_messages), 0)
+
+    def test_receive_promise_ignores_duplicates(self):
+        channel = HistoryChannel(replicas=['A', 'B', 'C'])
+        role = Proposer()
+
+        role.receive(Promise.create(proposal=Proposal('A', 1), sender='A'), channel)
         role.receive(Promise.create(proposal=Proposal('A', 1), sender='A'), channel)
         role.receive(Promise.create(proposal=Proposal('A', 1), sender='A'), channel)
 
         self.assertEqual(len(channel.broadcast_messages), 0)
+
+        role.receive(Promise.create(proposal=Proposal('A', 1), sender='B'), channel)
+
+        self.assertTrue(type(channel.broadcast_messages[-1]) is Accept)
 
 
 if __name__ == "__main__":

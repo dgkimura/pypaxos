@@ -4,6 +4,12 @@ from paxos.net.message import Request, Prepare, Promise, Accept, Accepted
 
 
 class Proposer(Role):
+    def __init__(self, *args, **kwargs):
+        super(Proposer, self).__init__(*args, **kwargs)
+        self.highest_proposal = None
+        self.proposed_value = None
+        self.received_promises = dict()
+
     @Role.receive.register(Request)
     def _(self, message, channel, create_reply=Prepare.create):
         """Prepare Phase.
@@ -16,6 +22,7 @@ class Proposer(Role):
         reply = create_reply(sender=message.receiver,
                              proposal=self.next_proposal)
         channel.broadcast(reply)
+        self.proposed_value = message.value
 
     @Role.receive.register(Promise)
     def _(self, message, channel, create_reply=Accept.create):
@@ -32,12 +39,21 @@ class Proposer(Role):
         self.received_promises.setdefault(message.proposal, set()) \
             .add(message.sender)
 
+        self.highest_proposal = self.highest_proposal or message.proposal
+
+        if (message.accepted_proposal is not None and
+            message.accepted_proposal.number >= self.highest_proposal.number):
+            self.highest_proposal = message.proposal
+            if message.value is not None:
+                self.proposed_value = message.value
+
         minimum_quorum = len(channel.replicas) // 2 + 1
         received_promises = len(self.received_promises.get(message.proposal))
 
         if received_promises >= minimum_quorum:
             reply = create_reply(sender=message.receiver,
-                                 proposal=message.proposal)
+                                 proposal=message.proposal,
+                                 value=self.proposed_value)
             channel.broadcast(reply)
 
     #@Role.receive.register(Accepted)

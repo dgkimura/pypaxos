@@ -4,6 +4,12 @@ from paxos.net.message import Prepare, Promise, Accept, Nack, Accepted
 
 
 class Acceptor(Role):
+    def __init__(self, *args, **kwargs):
+        super(Acceptor, self).__init__(*args, **kwargs)
+        self.prepared_proposal = None
+        self.accepted_proposal = None
+        self.accepted_value = None
+
     @Role.receive.register(Prepare)
     def _(self, message, channel, create_reply=Promise.create):
         """Promise Phase.
@@ -16,11 +22,13 @@ class Acceptor(Role):
 
         """
         print("RECEIVED message {0}".format(message))
-        if message.proposal.number >= self.prepared_proposal.number:
+        if (self.prepared_proposal is None or
+            message.proposal.number >= self.prepared_proposal.number):
             reply = create_reply(sender=message.receiver,
                                  receiver=message.sender,
                                  proposal=message.proposal,
-                                 accepted_proposal=self.accepted_proposal)
+                                 accepted_proposal=self.accepted_proposal,
+                                 value=self.accepted_value)
             channel.unicast(reply)
             self.prepared_proposal = message.proposal
         else:
@@ -39,10 +47,12 @@ class Acceptor(Role):
         """
         print("RECEIVED message {0}".format(message))
         if message.proposal.number >= self.prepared_proposal.number:
-            reply = create_reply(sender=message.receiver)
+            reply = create_reply(sender=message.receiver,
+                                 value=message.value)
             channel.broadcast(reply)
 
-            if message.proposal.number > self.accepted_proposal.number:
+            if (self.accepted_proposal is None or
+                message.proposal.number > self.accepted_proposal.number):
                 self.accepted_proposal = message.proposal
         else:
             reply = Nack.create(sender=message.receiver,

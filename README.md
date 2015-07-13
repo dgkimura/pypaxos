@@ -51,5 +51,4 @@ Client   Proposer      Acceptor     Learner
 References
 ==============
 
-[Wikipedia Paxos](https://en.wikipedia.org/wiki/Paxos_(computer_science))
 [Paxos Made Simple](http://research.microsoft.com/en-us/um/people/lamport/pubs/paxos-simple.pdf)

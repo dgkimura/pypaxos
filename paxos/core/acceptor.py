@@ -6,7 +6,7 @@ from paxos.net.message import Prepare, Promise, Accept, Nack, Accepted
 class Acceptor(Role):
     def __init__(self, *args, **kwargs):
         super(Acceptor, self).__init__(*args, **kwargs)
-        self.prepared_proposal = None
+        self.promised_proposal = None
         self.accepted_proposal = None
         self.accepted_value = None
 
@@ -22,15 +22,15 @@ class Acceptor(Role):
 
         """
         print("RECEIVED message {0}".format(message))
-        if (self.prepared_proposal is None or
-            message.proposal.number >= self.prepared_proposal.number):
+        if (self.promised_proposal is None or
+            message.proposal.number >= self.promised_proposal.number):
             reply = create_reply(sender=message.receiver,
                                  receiver=message.sender,
                                  proposal=message.proposal,
                                  accepted_proposal=self.accepted_proposal,
                                  value=self.accepted_value)
             channel.unicast(reply)
-            self.prepared_proposal = message.proposal
+            self.promised_proposal = message.proposal
         else:
             reply = Nack.create(sender=message.receiver,
                                 receiver=message.sender)
@@ -46,7 +46,7 @@ class Acceptor(Role):
 
         """
         print("RECEIVED message {0}".format(message))
-        if message.proposal.number >= self.prepared_proposal.number:
+        if message.proposal.number >= self.promised_proposal.number:
             reply = create_reply(sender=message.receiver,
                                  value=message.value)
             channel.broadcast(reply)

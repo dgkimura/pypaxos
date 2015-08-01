@@ -60,6 +60,16 @@ class TestProposer(TestCase):
 
         self.assertTrue(type(channel.broadcast_messages[-1]) is Accept)
 
+    def test_receive_promise_ignores_descending_proposal(self):
+        channel = HistoryChannel(replicas=['A'])
+        role = Proposer()
+
+        role.receive(Promise.create(proposal=Proposal('A', 2), sender='A', value="a_2"), channel)
+        role.receive(Promise.create(proposal=Proposal('A', 1), sender='A', value="a_1"), channel)
+
+        self.assertEqual(role.highest_proposal, Proposal('A', 2))
+        self.assertEqual(role.proposed_value, "a_2")
+
 
 if __name__ == "__main__":
     main()

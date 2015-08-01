@@ -39,9 +39,8 @@ class Proposer(Role):
         self.received_promises.setdefault(message.proposal, set()) \
             .add(message.sender)
 
-        self.highest_proposal = self.highest_proposal or message.proposal
-
-        if (message.accepted_proposal is not None and
+        if (self.highest_proposal is None or
+            message.accepted_proposal is not None and
             message.accepted_proposal.number >= self.highest_proposal.number):
             self.highest_proposal = message.proposal
             if message.value is not None:

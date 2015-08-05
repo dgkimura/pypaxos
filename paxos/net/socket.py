@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
-from socket import socket, AF_INET, SOCK_STREAM
+from socket import socket, AF_INET, SOCK_STREAM, SHUT_RDWR
 
 
 try:
@@ -20,6 +20,7 @@ class Socket(object):
         _socket = socket(AF_INET, SOCK_STREAM)
         _socket.connect(('', Socket.__PORT))
         _socket.sendall(self._serializer.dumps(data))
+        _socket.shutdown(SHUT_RDWR)
         _socket.close()
 
     def receive(self, listener, channel):
@@ -33,5 +34,6 @@ class Socket(object):
 
     def _route_to_listener(self, _socket, listener, channel):
         data = _socket.recv(Socket.__MAX_MESSAGE_SIZE)
+        _socket.shutdown(SHUT_RDWR)
         _socket.close()
         listener.receive(self._serializer.loads(data), channel)

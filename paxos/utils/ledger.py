@@ -1,8 +1,8 @@
 # datalog.py
 
 
-class DataLog(object):
-    __FILENAME = "pypaxos_datalog.txt"
+class Ledger(object):
+    __FILENAME = "pypaxos.ledger"
 
     def __init__(self):
         self._fd = open(self.__FILENAME, "a")

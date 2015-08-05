@@ -6,7 +6,7 @@ from paxos.net.message import Accepted, Response
 from paxos.net.proposal import Proposal
 
 
-class NopDataLog(object):
+class NopLedger(object):
     def append(self, log):
         pass
 
@@ -14,7 +14,7 @@ class NopDataLog(object):
 class TestLearner(TestCase):
     def test_receive_accepted(self):
         channel = HistoryChannel(replicas=['A', 'B', 'C'])
-        role = Learner(datalog=NopDataLog())
+        role = Learner(ledger=NopLedger())
 
         role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), channel)
         role.receive(Accepted.create(proposal=Proposal('A', 1), sender='B'), channel)
@@ -24,7 +24,7 @@ class TestLearner(TestCase):
 
     def test_receive_duplicate_accepted_proposals(self):
         channel = HistoryChannel(replicas=['A', 'B', 'C'])
-        role = Learner(datalog=NopDataLog())
+        role = Learner(ledger=NopLedger())
 
         role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), channel)
         role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), channel)

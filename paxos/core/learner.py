@@ -1,14 +1,14 @@
 # learner.py
 from paxos.core.role import Role
 from paxos.net.message import Accepted, Response
-from paxos.utils.datalog import DataLog
+from paxos.utils.ledger import Ledger
 
 
 class Learner(Role):
-    def __init__(self, *args, datalog=None, **kwargs):
+    def __init__(self, *args, ledger=None, **kwargs):
         super(Learner, self).__init__(*args, **kwargs)
         self.accepted_proposals = dict()
-        self._datalog = datalog or DataLog()
+        self._ledger = ledger or Ledger()
 
     @Role.receive.register(Accepted)
     def _(self, message, channel, create_reply=Response.create):
@@ -26,6 +26,6 @@ class Learner(Role):
         accepted_proposals = len(self.accepted_proposals.get(message.proposal))
 
         if accepted_proposals >= minimum_quorum:
-            self._datalog.append(message.value)
+            self._ledger.append(message.value)
             reply = create_reply()
             channel.unicast(reply)

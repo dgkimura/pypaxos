@@ -8,7 +8,7 @@ Installation
 
 You can install dependencies through pip.
 ```
-$ pip install -r requirements.txt
+$ pip3 install -r requirements.txt
 ```
 
 You can install package using setup tools.

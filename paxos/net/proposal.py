@@ -1,4 +1,31 @@
-from collections import namedtuple
+# proposal.py
 
 
-Proposal = namedtuple('Proposal', ['author', 'number'])
+def default_proposal():
+    return Proposal("", 0)
+
+
+class Proposal(object):
+    def __init__(self, author, number):
+        self.author = author
+        self.number = number
+
+    def __lt__(self, other):
+        return self.number < other.number
+
+    def __le__(self, other):
+        return self.number <= other.number
+
+    def __gt__(self, other):
+        return self.number > other.number
+
+    def __ge__(self, other):
+        return self.number >= other.number
+
+    def __eq__(self, other):
+        if other:
+            return self.number == other.number
+        return False
+
+    def __hash__(self):
+        return (self.author, self.number).__hash__()

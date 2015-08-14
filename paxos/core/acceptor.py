@@ -1,14 +1,17 @@
 # acceptor.py
 from paxos.core.role import Role
 from paxos.net.message import Prepare, Promise, Accept, Nack, Accepted
+from paxos.utils.postit import PostIt
 
 
 class Acceptor(Role):
-    def __init__(self, *args, **kwargs):
+    PROMISED = "promised.proposal"
+    ACCEPTED = "accepted.proposal"
+    VALUE = "value.str"
+
+    def __init__(self, *args, postit=None, **kwargs):
         super(Acceptor, self).__init__(*args, **kwargs)
-        self.promised_proposal = None
-        self.accepted_proposal = None
-        self.accepted_value = None
+        self.postit = postit or PostIt("acceptor.postit")
 
     @Role.receive.register(Prepare)
     def _(self, message, channel, create_reply=Promise.create):
@@ -22,15 +25,15 @@ class Acceptor(Role):
 
         """
         print("RECEIVED message {0}".format(message))
-        if (self.promised_proposal is None or
-            message.proposal.number >= self.promised_proposal.number):
-            reply = create_reply(sender=message.receiver,
-                                 receiver=message.sender,
-                                 proposal=message.proposal,
-                                 accepted_proposal=self.accepted_proposal,
-                                 value=self.accepted_value)
+        if message.proposal >= self.postit.read(Acceptor.PROMISED):
+            self.postit.write(Acceptor.PROMISED, message.proposal)
+            reply = create_reply(
+                sender=message.receiver,
+                receiver=message.sender,
+                proposal=message.proposal,
+                accepted_proposal=self.postit.read(Acceptor.ACCEPTED),
+                value=message.value)
             channel.unicast(reply)
-            self.promised_proposal = message.proposal
         else:
             reply = Nack.create(sender=message.receiver,
                                 receiver=message.sender)
@@ -46,14 +49,14 @@ class Acceptor(Role):
 
         """
         print("RECEIVED message {0}".format(message))
-        if message.proposal.number >= self.promised_proposal.number:
-            reply = create_reply(sender=message.receiver,
-                                 value=message.value)
-            channel.broadcast(reply)
+        if message.proposal >= self.postit.read(Acceptor.PROMISED):
+            if message.proposal > self.postit.read(Acceptor.ACCEPTED):
+                self.postit.write(Acceptor.ACCEPTED, message.proposal)
+                self.postit.write(Acceptor.VALUE, message.value)
 
-            if (self.accepted_proposal is None or
-                message.proposal.number > self.accepted_proposal.number):
-                self.accepted_proposal = message.proposal
+            reply = create_reply(sender=message.receiver,
+                                 value=self.postit.read(Acceptor.VALUE))
+            channel.broadcast(reply)
         else:
             reply = Nack.create(sender=message.receiver,
                                 receiver=message.sender)

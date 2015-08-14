@@ -13,6 +13,7 @@ class Role(object):
 
     @property
     def next_proposal(self):
-        author, number = self._current_proposal
-        self._current_proposal = Proposal(author, number + 1)
+        self._current_proposal = Proposal(
+            self._current_proposal.author,
+            self._current_proposal.number + 1)
         return self._current_proposal

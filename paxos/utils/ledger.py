@@ -1,4 +1,5 @@
 # datalog.py
+from datetime import datetime
 
 
 class Ledger(object):
@@ -8,5 +9,5 @@ class Ledger(object):
         self._fd = open(self.__FILENAME, "a")
 
     def append(self, log):
-        self._fd.write("{0}\n".format(log))
+        self._fd.write("{0},{1}\n".format(datetime.now(), log))
         self._fd.flush()

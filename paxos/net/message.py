@@ -17,6 +17,10 @@ class Message(object):
         accepted_proposal = accepted_proposal or default_proposal()
         return klass(sender, receiver, proposal, accepted_proposal, value)
 
+    def __str__(self):
+        return "{0}: \tproposal:{1} \tvalue:{2}".format(
+                self.__class__, self.proposal, self.value)
+
 
 class Request(Message):
     pass

@@ -29,3 +29,15 @@ class Proposal(object):
 
     def __hash__(self):
         return (self.author, self.number).__hash__()
+
+    def __str__(self):
+        return "Proposal({0}, {1})".format(self.author, self.number)
+
+    def next(self):
+        self.number += 1
+        return self
+
+
+class InitialProposal(Proposal):
+    def __init__(self, author):
+        super(InitialProposal, self).__init__(author, 0)

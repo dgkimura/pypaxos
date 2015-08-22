@@ -29,3 +29,6 @@ class Learner(Role):
             self._ledger.append(message.value)
             reply = create_reply()
             channel.unicast(reply)
+
+        if accepted_proposals == len(channel.replicas):
+            del self.accepted_proposals[message.proposal]

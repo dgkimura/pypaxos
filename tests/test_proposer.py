@@ -5,11 +5,13 @@ from paxos.net.history_channel import HistoryChannel
 from paxos.net.message import Request, Prepare, Promise, Accept, Accepted
 from paxos.net.proposal import Proposal
 
+from tests.stubs import InMemoryState
+
 
 class TestProposer(TestCase):
     def test_receive_request_sends_initial_proposal(self):
         channel = HistoryChannel()
-        role = Proposer()
+        role = Proposer(state=InMemoryState())
 
         role.receive(Request.create(), channel)
 
@@ -19,7 +21,7 @@ class TestProposer(TestCase):
 
     def test_receive_request_sends_subsequent_proposal(self):
         channel = HistoryChannel()
-        role = Proposer()
+        role = Proposer(state=InMemoryState())
 
         role.receive(Request.create(), channel)
         role.receive(Request.create(), channel)
@@ -30,7 +32,7 @@ class TestProposer(TestCase):
 
     def test_receive_promise_reaches_quorum(self):
         channel = HistoryChannel(replicas=['A', 'B', 'C'])
-        role = Proposer()
+        role = Proposer(state=InMemoryState())
 
         role.receive(Promise.create(proposal=Proposal('A', 1), sender='A'), channel)
         role.receive(Promise.create(proposal=Proposal('A', 1), sender='B'), channel)
@@ -40,7 +42,7 @@ class TestProposer(TestCase):
 
     def test_receive_promise_below_quorum(self):
         channel = HistoryChannel(replicas=['A', 'B', 'C'])
-        role = Proposer()
+        role = Proposer(state=InMemoryState())
 
         role.receive(Promise.create(proposal=Proposal('A', 1), sender='A'), channel)
 
@@ -48,7 +50,7 @@ class TestProposer(TestCase):
 
     def test_receive_promise_ignores_duplicates(self):
         channel = HistoryChannel(replicas=['A', 'B', 'C'])
-        role = Proposer()
+        role = Proposer(state=InMemoryState())
 
         role.receive(Promise.create(proposal=Proposal('A', 1), sender='A'), channel)
         role.receive(Promise.create(proposal=Proposal('A', 1), sender='A'), channel)
@@ -62,7 +64,7 @@ class TestProposer(TestCase):
 
     def test_receive_promise_ignores_descending_proposal(self):
         channel = HistoryChannel(replicas=['A'])
-        role = Proposer()
+        role = Proposer(state=InMemoryState())
 
         role.receive(Promise.create(proposal=Proposal('A', 2), sender='A', value="a_2"), channel)
         role.receive(Promise.create(proposal=Proposal('A', 1), sender='A', value="a_1"), channel)

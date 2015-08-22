@@ -27,7 +27,7 @@ class Learner(Role):
 
         if accepted_proposals >= minimum_quorum:
             self._ledger.append(message.value)
-            reply = create_reply()
+            reply = create_reply(proposal=message.proposal)
             channel.unicast(reply)
 
         if accepted_proposals == len(channel.replicas):

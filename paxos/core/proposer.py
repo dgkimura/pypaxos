@@ -4,10 +4,9 @@ from paxos.net.message import Request, Prepare, Promise, Accept, Accepted
 
 
 class Proposer(Role):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, proposal=None, **kwargs):
         super(Proposer, self).__init__(*args, **kwargs)
-        self.highest_proposal = None
-        self.proposed_value = None
+        self.highest_proposal, self.proposed_value = None, None
         self.received_promises = dict()
 
     @Role.receive.register(Request)
@@ -19,10 +18,15 @@ class Proposer(Role):
 
         """
         print("RECEIVED message {0}".format(message))
-        reply = create_reply(sender=message.receiver,
-                             proposal=self.next_proposal)
-        channel.broadcast(reply)
-        self.proposed_value = message.value
+        with self.state.lock():
+            proposal = self.state.write(Role.PROPOSED,
+                                        self.state.read(Role.PROPOSED).next())
+
+            reply = create_reply(sender=message.receiver,
+                                 proposal=self.state.read(Role.PROPOSED),
+                                 value=message.value)
+            channel.broadcast(reply)
+            self.proposed_value = message.value
 
     @Role.receive.register(Promise)
     def _(self, message, channel, create_reply=Accept.create):

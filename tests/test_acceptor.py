@@ -4,25 +4,15 @@ from paxos.core.acceptor import Acceptor
 from paxos.net.history_channel import HistoryChannel
 from paxos.net.message import Prepare, Promise, Accept, Nack, Accepted
 from paxos.net.proposal import Proposal
-from paxos.utils.postit import PostIt
 
-
-class InMemoryPostIt(PostIt):
-    def __init__(self):
-        super(InMemoryPostIt, self).__init__("fake_file_name")
-
-    def _refresh(self):
-        pass
-
-    def _flush(self):
-        pass
+from tests.stubs import InMemoryState
 
 
 class TestAcceptor(TestCase):
     def test_receive_prepare_with_higher_proposal(self):
         channel = HistoryChannel()
-        postit = InMemoryPostIt()
-        role = Acceptor(postit=postit)
+        postit = InMemoryState()
+        role = Acceptor(state=postit)
 
         role.receive(Prepare.create(proposal=Proposal('A', 1)), channel)
         role.receive(Prepare.create(proposal=Proposal('A', 2)), channel)
@@ -33,8 +23,8 @@ class TestAcceptor(TestCase):
 
     def test_receive_prepare_with_lower_proposal(self):
         channel = HistoryChannel()
-        postit = InMemoryPostIt()
-        role = Acceptor(postit=postit)
+        postit = InMemoryState()
+        role = Acceptor(state=postit)
 
         role.receive(Prepare.create(proposal=Proposal('A', 2)), channel)
         role.receive(Prepare.create(proposal=Proposal('A', 1)), channel)
@@ -45,7 +35,7 @@ class TestAcceptor(TestCase):
 
     def test_receive_accept_after_lower_or_equal_prepare(self):
         channel = HistoryChannel()
-        role = Acceptor(postit=InMemoryPostIt())
+        role = Acceptor(state=InMemoryState())
 
         role.receive(Prepare.create(proposal=Proposal('A', 0)), channel)
         role.receive(Prepare.create(proposal=Proposal('A', 1)), channel)
@@ -55,7 +45,7 @@ class TestAcceptor(TestCase):
 
     def test_receive_accept_after_higher_prepare(self):
         channel = HistoryChannel()
-        role = Acceptor(postit=InMemoryPostIt())
+        role = Acceptor(state=InMemoryState())
 
         role.receive(Prepare.create(proposal=Proposal('A', 2)), channel)
         role.receive(Accept.create(proposal=Proposal('A', 1)), channel)

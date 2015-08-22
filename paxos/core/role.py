@@ -1,19 +1,22 @@
 from paxos.net.proposal import Proposal
 from paxos.utils.decorators import methoddispatch
+from paxos.utils.persistedstate import PersistedState
 
 
 class Role(object):
-    def __init__(self, author="anonymous"):
-        self._current_proposal = Proposal(author, 0)
+    PROPOSED = "proposed.proposal"
+    PROMISED = "promised.proposal"
+    ACCEPTED = "accepted.proposal"
+    VALUE = "value.str"
+
+    def __init__(self, state=None, author=None):
+        self.state = state or PersistedState("pypaxos.state")
+        self.state.set_default(Role.PROPOSED, Proposal(author, 0))
+        self.state.set_default(Role.PROMISED, Proposal(author, 0))
+        self.state.set_default(Role.ACCEPTED, Proposal(author, 0))
+        self.state.set_default(Role.VALUE, "")
 
     @methoddispatch
     def receive(self, message, channel):
         error = "No function handles message: {0}.".format(message)
         raise NotImplementedError(error)
-
-    @property
-    def next_proposal(self):
-        self._current_proposal = Proposal(
-            self._current_proposal.author,
-            self._current_proposal.number + 1)
-        return self._current_proposal

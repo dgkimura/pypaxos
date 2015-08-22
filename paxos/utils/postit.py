@@ -8,7 +8,8 @@ from paxos.net.proposal import default_proposal
 
 DEFAULT_TYPES = {
     "proposal": default_proposal(),
-    "str": ""
+    "str": "",
+    "int": 0
 }
 
 
@@ -28,7 +29,7 @@ class PostIt(object):
             return self._dict[key]
 
         for k, v in DEFAULT_TYPES.items():
-            if k in key:
+            if key.endswith(k):
                 return v
 
         return None

@@ -5,6 +5,7 @@ from paxos.net.message import Prepare, Promise, Accept, Nack, Accepted
 
 class Acceptor(Role):
     @Role.receive.register(Prepare)
+    @Role.update_proposal
     def _(self, message, channel, create_reply=Promise.create):
         """Promise Phase.
 
@@ -32,6 +33,7 @@ class Acceptor(Role):
                 channel.unicast(reply)
 
     @Role.receive.register(Accept)
+    @Role.update_proposal
     def _(self, message, channel, create_reply=Accepted.create):
         """Accepted Phase.
 

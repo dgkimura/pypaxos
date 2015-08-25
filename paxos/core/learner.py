@@ -11,6 +11,7 @@ class Learner(Role):
         self._ledger = ledger or Ledger()
 
     @Role.receive.register(Accepted)
+    @Role.update_proposal
     def _(self, message, channel, create_reply=Response.create):
         """Learn Phase.
 

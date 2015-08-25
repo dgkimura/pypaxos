@@ -20,3 +20,13 @@ class Role(object):
     def receive(self, message, channel):
         error = "No function handles message: {0}.".format(message)
         raise NotImplementedError(error)
+
+
+    @staticmethod
+    def update_proposal(func):
+        def wrapper(self, message, channel, **kw):
+            with self.state.lock():
+                if message.proposal > self.state.read(Role.PROPOSED):
+                    self.state.write(Role.PROPOSED, message.proposal)
+            func(self, message, channel, **kw)
+        return wrapper

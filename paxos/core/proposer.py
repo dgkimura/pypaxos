@@ -4,7 +4,7 @@ from paxos.net.message import Request, Prepare, Promise, Accept, Accepted
 
 
 class Proposer(Role):
-    def __init__(self, *args, proposal=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(Proposer, self).__init__(*args, **kwargs)
         self.highest_proposal, self.proposed_value = None, None
         self.received_promises = dict()
@@ -29,6 +29,7 @@ class Proposer(Role):
             self.proposed_value = message.value
 
     @Role.receive.register(Promise)
+    @Role.update_proposal
     def _(self, message, channel, create_reply=Accept.create):
         """Accept Phase.
 

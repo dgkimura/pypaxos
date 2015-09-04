@@ -10,23 +10,23 @@ from tests.stubs import InMemoryState, NopLedger
 
 class TestNode(TestCase):
     def test_receive_updates_highest_proposal(self):
-        channel = HistoryChannel()
+        channel = HistoryChannel(replicas=['A', 'B', 'C'])
         postit = InMemoryState()
         role = Node(ledger=NopLedger(), state=postit)
 
         self.assertEqual(postit.read(Node.PROPOSED), Proposal(None, 0))
 
         role.receive(Prepare.create(proposal=Proposal('A', 1)), channel)
-        self.assertEqual(postit.read(Node.PROPOSED), Proposal('A', 1))
-
-        role.receive(Promise.create(proposal=Proposal('A', 2)), channel)
         self.assertEqual(postit.read(Node.PROPOSED), Proposal('A', 2))
 
-        role.receive(Accept.create(proposal=Proposal('A', 3)), channel)
-        self.assertEqual(postit.read(Node.PROPOSED), Proposal('A', 3))
-
-        role.receive(Accepted.create(proposal=Proposal('A', 4)), channel)
+        role.receive(Promise.create(proposal=Proposal('A', 3)), channel)
         self.assertEqual(postit.read(Node.PROPOSED), Proposal('A', 4))
+
+        role.receive(Accept.create(proposal=Proposal('A', 5)), channel)
+        self.assertEqual(postit.read(Node.PROPOSED), Proposal('A', 6))
+
+        role.receive(Accepted.create(proposal=Proposal('A', 7)), channel)
+        self.assertEqual(postit.read(Node.PROPOSED), Proposal('A', 8))
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # learner.py
 from paxos.core.role import Role
-from paxos.net.message import Accepted, Response
+from paxos.net.message import Accepted, Response, Request
 from paxos.utils.ledger import Ledger
 
 
@@ -30,6 +30,19 @@ class Learner(Role):
             self._ledger.append(message.value)
             reply = create_reply(proposal=message.proposal)
             channel.unicast(reply)
+
+        if accepted_proposals == minimum_quorum:
+            # Here we reset for the next round.
+            with self.state.lock():
+                self.state.write(Role.PROPOSED,
+                                 self.state.read(Role.PROPOSED).next())
+            self.state.write(Role.VALUE, None)
+            if message.proposal in self.pending_proposals:
+                self.pending_proposals.remove(message.proposal)
+
+            if self.requested_values:
+                channel.unicast(Request.create(receiver=message.receiver,
+                                               sender=message.receiver))
 
         if accepted_proposals == len(channel.replicas):
             del self.accepted_proposals[message.proposal]

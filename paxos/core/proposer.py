@@ -6,7 +6,7 @@ from paxos.net.message import Request, Prepare, Promise, Accept, Accepted
 class Proposer(Role):
     def __init__(self, *args, **kwargs):
         super(Proposer, self).__init__(*args, **kwargs)
-        self.highest_proposal, self.proposed_value = None, None
+        self.highest_proposal = None
         self.received_promises = dict()
 
     @Role.receive.register(Request)
@@ -18,15 +18,16 @@ class Proposer(Role):
 
         """
         print("RECEIVED message {0}".format(message))
-        with self.state.lock():
-            proposal = self.state.write(Role.PROPOSED,
-                                        self.state.read(Role.PROPOSED).next())
+        if message.value:
+            self.requested_values.append(message.value)
 
+        # Here we ensure that multiple requests are handled as sequential
+        # proposals.
+        if not self.state.read(Role.PROPOSED) in self.pending_proposals:
+            self.pending_proposals.append(self.state.read(Role.PROPOSED))
             reply = create_reply(sender=message.receiver,
-                                 proposal=self.state.read(Role.PROPOSED),
-                                 value=message.value)
+                                 proposal=self.state.read(Role.PROPOSED))
             channel.broadcast(reply)
-            self.proposed_value = message.value
 
     @Role.receive.register(Promise)
     @Role.update_proposal
@@ -44,11 +45,14 @@ class Proposer(Role):
         self.received_promises.setdefault(message.proposal, set()) \
             .add(message.sender)
 
+        value = self.requested_values and self.requested_values.pop(0) or None
+
         if (self.highest_proposal is None or
             message.accepted_proposal >= self.highest_proposal):
             self.highest_proposal = message.proposal
             if message.value:
-                self.proposed_value = message.value
+                value = message.value
+                self.requested_values.append(value)
 
         minimum_quorum = len(channel.replicas) // 2 + 1
         received_promises = len(self.received_promises.get(message.proposal))
@@ -56,7 +60,7 @@ class Proposer(Role):
         if received_promises >= minimum_quorum:
             reply = create_reply(sender=message.receiver,
                                  proposal=message.proposal,
-                                 value=self.proposed_value)
+                                 value=value)
             channel.broadcast(reply)
 
     #@Role.receive.register(Accepted)

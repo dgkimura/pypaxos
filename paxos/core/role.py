@@ -12,9 +12,15 @@ class Role(object):
     def __init__(self, state=None, author=None):
         self.state = state or PersistedState("pypaxos.state")
         self.state.set_default(Role.PROPOSED, Proposal(author, 0))
-        self.state.set_default(Role.PROMISED, Proposal(author, 0))
-        self.state.set_default(Role.ACCEPTED, Proposal(author, 0))
+        self.state.set_default(Role.PROMISED, Proposal(author, -1))
+        self.state.set_default(Role.ACCEPTED, Proposal(author, -1))
         self.state.set_default(Role.VALUE, "")
+
+        # List of values to be associated with proposal
+        self.requested_values = []
+
+        # List of proposals in progress
+        self.pending_proposals = []
 
     @methoddispatch
     def receive(self, message, channel):
@@ -27,6 +33,6 @@ class Role(object):
         def wrapper(self, message, channel, **kw):
             with self.state.lock():
                 if message.proposal > self.state.read(Role.PROPOSED):
-                    self.state.write(Role.PROPOSED, message.proposal)
+                    self.state.write(Role.PROPOSED, message.proposal.next())
             func(self, message, channel, **kw)
         return wrapper

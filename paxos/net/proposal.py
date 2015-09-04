@@ -34,8 +34,7 @@ class Proposal(object):
         return "Proposal({0}, {1})".format(self.author, self.number)
 
     def next(self):
-        self.number += 1
-        return self
+        return Proposal(self.author, self.number + 1)
 
 
 class InitialProposal(Proposal):

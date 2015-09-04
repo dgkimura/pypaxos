@@ -25,7 +25,7 @@ class Acceptor(Role):
                     receiver=message.sender,
                     proposal=message.proposal,
                     accepted_proposal=self.state.read(Role.ACCEPTED),
-                    value=message.value)
+                    value=self.state.read(Role.VALUE))
                 channel.unicast(reply)
             else:
                 reply = Nack.create(sender=message.receiver,

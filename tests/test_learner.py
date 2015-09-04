@@ -1,6 +1,7 @@
 from unittest import TestCase, main
 
 from paxos.core.learner import Learner
+from paxos.core.role import Role
 from paxos.net.history_channel import HistoryChannel
 from paxos.net.message import Accepted, Response
 from paxos.net.proposal import Proposal
@@ -18,6 +19,16 @@ class TestLearner(TestCase):
         role.receive(Accepted.create(proposal=Proposal('A', 1), sender='C'), channel)
 
         self.assertTrue(type(channel.unicast_messages[0]) is Response)
+
+    def test_proposal_increments_after_accepted(self):
+        channel = HistoryChannel(replicas=['A'])
+        state = InMemoryState()
+        role = Learner(ledger=NopLedger(), state=state)
+
+        role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), channel)
+
+        self.assertTrue(state.read(Role.PROPOSED), Proposal('A', 2))
+
 
     def test_receive_duplicate_accepted_proposals(self):
         channel = HistoryChannel(replicas=['A', 'B', 'C'])

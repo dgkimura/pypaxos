@@ -1,7 +1,7 @@
 PyPaxos
 ==============
 
-This is a python implementation of the [paxos algorithm](https://en.wikipedia.org/wiki/Paxos_(computer_science)). It requires python version 3.4+.
+This is a python implementation of the [paxos algorithm](https://en.wikipedia.org/wiki/Paxos_(computer_science)). It requires python version 3.4+ to leverage [PEP 443](https://www.python.org/dev/peps/pep-0443/).
 
 Installation
 ==============
@@ -51,4 +51,5 @@ Client   Proposer      Acceptor     Learner
 References
 ==============
 
-[Paxos Made Simple](http://research.microsoft.com/en-us/um/people/lamport/pubs/paxos-simple.pdf)
+- [The Part-Time Parliament](http://research.microsoft.com/en-us/um/people/lamport/pubs/lamport-paxos.pdf)
+- [Paxos Made Simple](http://research.microsoft.com/en-us/um/people/lamport/pubs/paxos-simple.pdf)

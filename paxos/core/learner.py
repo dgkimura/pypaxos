@@ -1,6 +1,6 @@
 # learner.py
 from paxos.core.role import Role
-from paxos.net.message import Accepted, Response, Request
+from paxos.net.message import Accepted, Response, Request, Sync, Synced
 from paxos.utils.ledger import Ledger
 
 
@@ -46,3 +46,15 @@ class Learner(Role):
 
         if accepted_proposals == len(channel.replicas):
             del self.accepted_proposals[message.proposal]
+
+    @Role.receive.register(Sync)
+    def _(self, message, channel):
+        """
+        """
+        pass
+
+    @Role.receive.register(Synced)
+    def _(self, message, channel):
+        """
+        """
+        pass

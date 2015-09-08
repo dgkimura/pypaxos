@@ -26,11 +26,11 @@ class TestAcceptor(TestCase):
         postit = InMemoryState()
         role = Acceptor(state=postit)
 
-        role.receive(Prepare.create(proposal=Proposal('A', 2)), channel)
         role.receive(Prepare.create(proposal=Proposal('A', 1)), channel)
+        role.receive(Prepare.create(proposal=Proposal('A', 0)), channel)
 
         self.assertEqual(len(channel.unicast_messages), 2)
-        self.assertEqual(postit.read(Acceptor.PROMISED), Proposal('A', 2))
+        self.assertEqual(postit.read(Acceptor.PROMISED), Proposal('A', 1))
         self.assertTrue(type(channel.unicast_messages[-1]) is Nack)
 
     def test_receive_accept_after_lower_or_equal_prepare(self):
@@ -47,8 +47,8 @@ class TestAcceptor(TestCase):
         channel = HistoryChannel()
         role = Acceptor(state=InMemoryState())
 
-        role.receive(Prepare.create(proposal=Proposal('A', 2)), channel)
-        role.receive(Accept.create(proposal=Proposal('A', 1)), channel)
+        role.receive(Prepare.create(proposal=Proposal('A', 1)), channel)
+        role.receive(Accept.create(proposal=Proposal('A', 0)), channel)
 
         self.assertTrue(type(channel.unicast_messages[-1]) is Nack)
 

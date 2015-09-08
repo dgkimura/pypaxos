@@ -68,12 +68,12 @@ class TestProposer(TestCase):
         state = InMemoryState()
         role = Proposer(state=state)
 
-        role.receive(Promise.create(proposal=Proposal('A', 2), sender='A', value="a_2"), channel)
-        self.assertEqual(role.highest_proposal, Proposal('A', 2))
         role.receive(Promise.create(proposal=Proposal('A', 1), sender='A', value="a_1"), channel)
+        self.assertEqual(role.highest_proposal, Proposal('A', 1))
+        role.receive(Promise.create(proposal=Proposal('A', 0), sender='A', value="a_0"), channel)
 
-        self.assertEqual(role.highest_proposal, Proposal('A', 2))
-        self.assertEqual(channel.broadcast_messages[-1].value, "a_2")
+        self.assertEqual(role.highest_proposal, Proposal('A', 1))
+        self.assertEqual(channel.broadcast_messages[-1].value, "a_1")
 
 
 if __name__ == "__main__":

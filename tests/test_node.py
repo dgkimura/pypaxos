@@ -2,7 +2,7 @@ from unittest import TestCase, main
 
 from paxos.core.node import Node
 from paxos.net.history_channel import HistoryChannel
-from paxos.net.message import Request, Prepare, Promise, Accept, Accepted
+from paxos.net.message import Request, Prepare, Promise, Accept, Accepted, Sync
 from paxos.net.proposal import Proposal
 
 from tests.stubs import InMemoryState, NopLedger
@@ -27,6 +27,15 @@ class TestNode(TestCase):
 
         role.receive(Accepted.create(proposal=Proposal('A', 7)), channel)
         self.assertEqual(postit.read(Node.PROPOSED), Proposal('A', 8))
+
+    def test_role_behind_sends_sync_message(self):
+        channel = HistoryChannel()
+        postit = InMemoryState()
+        role = Node(ledger=NopLedger(), state=postit)
+
+        role.receive(Prepare.create(proposal=Proposal('A', 2)), channel)
+
+        self.assertTrue(type(channel.unicast_messages[-1]) is Sync)
 
 
 if __name__ == "__main__":

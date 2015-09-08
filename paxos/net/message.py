@@ -48,3 +48,11 @@ class Nack(Message):
 
 class Response(Message):
     pass
+
+
+class Sync(Message):
+    pass
+
+
+class Synced(Message):
+    pass

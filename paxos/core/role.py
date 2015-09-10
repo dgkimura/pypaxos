@@ -39,6 +39,7 @@ class Role(object):
             if this_proposal.number > latest_proposal.number + 1:
                 # we're behind and need to catch up
                 channel.unicast(Sync.create(receiver=message.sender,
+                                            sender=message.receiver,
                                             proposal=latest_proposal))
             else:
                 func(self, message, channel, **kw)

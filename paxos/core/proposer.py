@@ -21,10 +21,7 @@ class Proposer(Role):
         if message.value:
             self.requested_values.append(message.value)
 
-        # Here we ensure that multiple requests are handled as sequential
-        # proposals.
-        if not self.state.read(Role.PROPOSED) in self.pending_proposals:
-            self.pending_proposals.append(self.state.read(Role.PROPOSED))
+        if self.requested_values:
             reply = create_reply(sender=message.receiver,
                                  proposal=self.state.read(Role.PROPOSED))
             channel.broadcast(reply)

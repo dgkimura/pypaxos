@@ -18,7 +18,7 @@ class Acceptor(Role):
         """
         print("RECEIVED message {0}".format(message))
         with self.state.lock():
-            if message.proposal >= self.state.read(Role.PROMISED):
+            if message.proposal > self.state.read(Role.PROMISED):
                 self.state.write(Role.PROMISED, message.proposal)
                 reply = create_reply(
                     sender=message.receiver,

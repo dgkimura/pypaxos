@@ -20,9 +20,6 @@ class Role(object):
         # List of values to be associated with proposal
         self.requested_values = []
 
-        # List of proposals in progress
-        self.pending_proposals = []
-
     @methoddispatch
     def receive(self, message, channel):
         error = "No function handles message: {0}.".format(message)

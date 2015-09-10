@@ -10,11 +10,18 @@ from tests.stubs import InMemoryState
 
 
 class TestProposer(TestCase):
-    def test_receive_request_sends_initial_proposal(self):
+    def test_receive_request_without_value(self):
         channel = HistoryChannel()
         role = Proposer(state=InMemoryState())
 
         role.receive(Request.create(), channel)
+        self.assertEqual(len(channel.broadcast_messages), 0)
+
+    def test_receive_request_sends_initial_proposal(self):
+        channel = HistoryChannel()
+        role = Proposer(state=InMemoryState())
+
+        role.receive(Request.create(value="myval"), channel)
 
         sent_message = channel.broadcast_messages[-1]
         self.assertTrue(type(sent_message) is Prepare)
@@ -24,9 +31,9 @@ class TestProposer(TestCase):
         channel = HistoryChannel()
         role = Proposer(state=InMemoryState())
 
-        role.receive(Request.create(), channel)
-        role.receive(Request.create(), channel)
-        role.receive(Request.create(), channel)
+        role.receive(Request.create(value="myval"), channel)
+        role.receive(Request.create(value="myval"), channel)
+        role.receive(Request.create(value="myval"), channel)
 
         sent_message = channel.broadcast_messages[-1]
         self.assertEqual(sent_message.proposal.number, 0)

@@ -37,12 +37,9 @@ class Learner(Role):
                 self.state.write(Role.PROPOSED,
                                  self.state.read(Role.PROPOSED).next())
             self.state.write(Role.VALUE, None)
-            if message.proposal in self.pending_proposals:
-                self.pending_proposals.remove(message.proposal)
 
-            if self.requested_values:
-                channel.unicast(Request.create(receiver=message.receiver,
-                                               sender=message.receiver))
+            channel.unicast(Request.create(receiver=message.receiver,
+                                           sender=message.receiver))
 
         if accepted_proposals == len(channel.replicas):
             del self.accepted_proposals[message.proposal]

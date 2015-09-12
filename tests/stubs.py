@@ -13,5 +13,5 @@ class InMemoryState(PersistedState):
 
 
 class NopLedger(object):
-    def append(self, log):
+    def append(self, proposal, log):
         pass

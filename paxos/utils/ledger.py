@@ -8,6 +8,6 @@ class Ledger(object):
     def __init__(self):
         self._fd = open(self.__FILENAME, "a")
 
-    def append(self, log):
-        self._fd.write("{0},{1}\n".format(datetime.now(), log))
+    def append(self, proposal, log):
+        self._fd.write("{0},{1},{2}\n".format(proposal, datetime.now(), log))
         self._fd.flush()

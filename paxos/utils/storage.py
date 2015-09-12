@@ -1,0 +1,27 @@
+from linecache import getline
+
+
+class Storage(object):
+    def __init__(self, filename):
+        self._filename = filename
+
+    def __getitem__(self, index):
+        return getline(self._filename, index)
+
+    def __len__(self):
+        length = 0
+        for line in open(self._filename).xreadlines(): length += 1
+        return length
+
+    def append(self, line):
+        with open(self._filename, 'a') as f:
+            f.write("{0}\n".format(line))
+
+    def get(self):
+        with open(self._filename, 'r') as f:
+            return f.read()
+
+    def put(self, contents):
+        with open(self._filename, 'w+') as f:
+            f.write(contents)
+            f.truncate()

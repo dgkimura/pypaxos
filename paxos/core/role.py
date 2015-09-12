@@ -11,7 +11,7 @@ class Role(object):
     VALUE = "value.str"
 
     def __init__(self, state=None, author=None):
-        self.state = state or PersistedState("pypaxos.state")
+        self.state = state or PersistedState()
         self.state.set_default(Role.PROPOSED, Proposal(author, 0))
         self.state.set_default(Role.PROMISED, Proposal(author, -1))
         self.state.set_default(Role.ACCEPTED, Proposal(author, -1))

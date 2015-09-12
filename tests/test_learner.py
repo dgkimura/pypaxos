@@ -5,40 +5,38 @@ from paxos.core.role import Role
 from paxos.net.history_channel import HistoryChannel
 from paxos.net.message import Accepted, Response
 from paxos.net.proposal import Proposal
+from paxos.utils.persistedstate import PersistedState
 
-from tests.stubs import InMemoryState, NopLedger
+from tests.stubs import InMemoryStorage, NopLedger
 
 
 class TestLearner(TestCase):
-    def test_receive_accepted(self):
-        channel = HistoryChannel(replicas=['A', 'B', 'C'])
-        role = Learner(ledger=NopLedger(), state=InMemoryState())
+    def setUp(self):
+        self.channel = HistoryChannel(replicas=['A', 'B', 'C'])
+        self.state = PersistedState(storage=InMemoryStorage("fakefile"))
+        self.role = Learner(ledger=NopLedger(), state=self.state)
 
-        role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), channel)
-        role.receive(Accepted.create(proposal=Proposal('A', 1), sender='B'), channel)
-        role.receive(Accepted.create(proposal=Proposal('A', 1), sender='C'), channel)
+    def test_learner_receives_quorum_of_accepteds(self):
+        self.role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), self.channel)
+        self.role.receive(Accepted.create(proposal=Proposal('A', 1), sender='B'), self.channel)
+        self.role.receive(Accepted.create(proposal=Proposal('A', 1), sender='C'), self.channel)
 
-        self.assertTrue(type(channel.unicast_messages[0]) is Response)
+        self.assertTrue(type(self.channel.unicast_messages[0]) is Response)
 
-    def test_proposal_increments_after_accepted(self):
-        channel = HistoryChannel(replicas=['A'])
-        state = InMemoryState()
-        role = Learner(ledger=NopLedger(), state=state)
+    def test_learner_receives_quorum_of_accepteds_causes_proposal_to_increment(self):
+        self.role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), self.channel)
+        self.role.receive(Accepted.create(proposal=Proposal('A', 1), sender='B'), self.channel)
+        self.role.receive(Accepted.create(proposal=Proposal('A', 1), sender='C'), self.channel)
 
-        role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), channel)
-
-        self.assertTrue(state.read(Role.PROPOSED), Proposal('A', 2))
+        self.assertTrue(self.state.read(Role.PROPOSED), Proposal('A', 2))
 
 
-    def test_receive_duplicate_accepted_proposals(self):
-        channel = HistoryChannel(replicas=['A', 'B', 'C'])
-        role = Learner(ledger=NopLedger(), state=InMemoryState())
+    def test_learner_ignores_duplicate_accepteds(self):
+        self.role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), self.channel)
+        self.role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), self.channel)
+        self.role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), self.channel)
 
-        role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), channel)
-        role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), channel)
-        role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), channel)
-
-        self.assertFalse(channel.unicast_messages)
+        self.assertFalse(self.channel.unicast_messages)
 
 
 if __name__ == "__main__":

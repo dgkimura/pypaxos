@@ -4,53 +4,45 @@ from paxos.core.acceptor import Acceptor
 from paxos.net.history_channel import HistoryChannel
 from paxos.net.message import Prepare, Promise, Accept, Nack, Accepted
 from paxos.net.proposal import Proposal
+from paxos.utils.persistedstate import PersistedState
 
-from tests.stubs import InMemoryState
+from tests.stubs import InMemoryStorage
 
 
 class TestAcceptor(TestCase):
-    def test_receive_prepare_with_higher_proposal(self):
-        channel = HistoryChannel()
-        postit = InMemoryState()
-        role = Acceptor(state=postit)
+    def setUp(self):
+        self.channel = HistoryChannel()
+        self.state = PersistedState(storage=InMemoryStorage("fakefile"))
+        self.role = Acceptor(state=self.state)
 
-        role.receive(Prepare.create(proposal=Proposal('A', 1)), channel)
-        role.receive(Prepare.create(proposal=Proposal('A', 2)), channel)
+    def test_acceptor_receives_higher_prepare(self):
+        self.role.receive(Prepare.create(proposal=Proposal('A', 1)), self.channel)
+        self.role.receive(Prepare.create(proposal=Proposal('A', 2)), self.channel)
 
-        self.assertEqual(len(channel.unicast_messages), 2)
-        self.assertEqual(postit.read(Acceptor.PROMISED), Proposal('A', 2))
-        self.assertTrue(type(channel.unicast_messages[-1]) is Promise)
+        self.assertEqual(len(self.channel.unicast_messages), 2)
+        self.assertEqual(self.state.read(Acceptor.PROMISED), Proposal('A', 2))
+        self.assertTrue(type(self.channel.unicast_messages[-1]) is Promise)
 
-    def test_receive_prepare_with_lower_proposal(self):
-        channel = HistoryChannel()
-        postit = InMemoryState()
-        role = Acceptor(state=postit)
+    def test_acceptor_receives_lower_prepare(self):
+        self.role.receive(Prepare.create(proposal=Proposal('A', 1)), self.channel)
+        self.role.receive(Prepare.create(proposal=Proposal('A', 0)), self.channel)
 
-        role.receive(Prepare.create(proposal=Proposal('A', 1)), channel)
-        role.receive(Prepare.create(proposal=Proposal('A', 0)), channel)
+        self.assertEqual(len(self.channel.unicast_messages), 2)
+        self.assertEqual(self.state.read(Acceptor.PROMISED), Proposal('A', 1))
+        self.assertTrue(type(self.channel.unicast_messages[-1]) is Nack)
 
-        self.assertEqual(len(channel.unicast_messages), 2)
-        self.assertEqual(postit.read(Acceptor.PROMISED), Proposal('A', 1))
-        self.assertTrue(type(channel.unicast_messages[-1]) is Nack)
+    def test_acceptor_receives_lower_prepare_and_then_receives_accept(self):
+        self.role.receive(Prepare.create(proposal=Proposal('A', 1)), self.channel)
+        self.role.receive(Prepare.create(proposal=Proposal('A', 0)), self.channel)
+        self.role.receive(Accept.create(proposal=Proposal('A', 1)), self.channel)
 
-    def test_receive_accept_after_lower_or_equal_prepare(self):
-        channel = HistoryChannel()
-        role = Acceptor(state=InMemoryState())
+        self.assertTrue(type(self.channel.broadcast_messages[0]) is Accepted)
 
-        role.receive(Prepare.create(proposal=Proposal('A', 0)), channel)
-        role.receive(Prepare.create(proposal=Proposal('A', 1)), channel)
-        role.receive(Accept.create(proposal=Proposal('A', 1)), channel)
+    def test_acceptor_receives_prepare_and_then_receives_lower_accept(self):
+        self.role.receive(Prepare.create(proposal=Proposal('A', 1)), self.channel)
+        self.role.receive(Accept.create(proposal=Proposal('A', 0)), self.channel)
 
-        self.assertTrue(type(channel.broadcast_messages[0]) is Accepted)
-
-    def test_receive_accept_after_higher_prepare(self):
-        channel = HistoryChannel()
-        role = Acceptor(state=InMemoryState())
-
-        role.receive(Prepare.create(proposal=Proposal('A', 1)), channel)
-        role.receive(Accept.create(proposal=Proposal('A', 0)), channel)
-
-        self.assertTrue(type(channel.unicast_messages[-1]) is Nack)
+        self.assertTrue(type(self.channel.unicast_messages[-1]) is Nack)
 
 
 if __name__ == "__main__":

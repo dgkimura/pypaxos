@@ -1,17 +1,23 @@
 from paxos.utils.persistedstate import PersistedState
 
 
-class InMemoryState(PersistedState):
-    def __init__(self):
-        super(InMemoryState, self).__init__("fake_file_name")
+class InMemoryStorage(object):
+    def __init__(self, filename):
+        self._contents = ""
 
-    def _refresh(self):
-        pass
+    def __len__(self):
+        return len(self._contents.split())
 
-    def _flush(self):
-        pass
+    def append(self, line):
+        self._contents += "\n{0}".format(line)
+
+    def get(self):
+        return self._contents
+
+    def put(self, contents):
+        self._contents = contents
 
 
 class NopLedger(object):
-    def append(self, proposal, log):
+    def append(self, ledger_entry):
         pass

@@ -4,38 +4,36 @@ from paxos.core.node import Node
 from paxos.net.history_channel import HistoryChannel
 from paxos.net.message import Request, Prepare, Promise, Accept, Accepted, Sync
 from paxos.net.proposal import Proposal
+from paxos.utils.persistedstate import PersistedState
 
-from tests.stubs import InMemoryState, NopLedger
+from tests.stubs import InMemoryStorage, NopLedger
 
 
 class TestNode(TestCase):
-    def test_receive_updates_highest_proposal(self):
-        channel = HistoryChannel(replicas=['A', 'B', 'C'])
-        postit = InMemoryState()
-        role = Node(ledger=NopLedger(), state=postit)
+    def setUp(self):
+        self.channel = HistoryChannel(replicas=['A', 'B', 'C'])
+        self.state = PersistedState(storage=InMemoryStorage("fakefile"))
+        self.role = Node(ledger=NopLedger(), state=self.state)
 
-        self.assertEqual(postit.read(Node.PROPOSED), Proposal(None, 0))
+    def test_node_receives_higher_proposals(self):
+        self.assertEqual(self.state.read(Node.PROPOSED), Proposal(None, 0))
 
-        role.receive(Prepare.create(proposal=Proposal('A', 1)), channel)
-        self.assertEqual(postit.read(Node.PROPOSED), Proposal('A', 2))
+        self.role.receive(Prepare.create(proposal=Proposal('A', 1)), self.channel)
+        self.assertEqual(self.state.read(Node.PROPOSED), Proposal('A', 2))
 
-        role.receive(Promise.create(proposal=Proposal('A', 3)), channel)
-        self.assertEqual(postit.read(Node.PROPOSED), Proposal('A', 4))
+        self.role.receive(Promise.create(proposal=Proposal('A', 3)), self.channel)
+        self.assertEqual(self.state.read(Node.PROPOSED), Proposal('A', 4))
 
-        role.receive(Accept.create(proposal=Proposal('A', 5)), channel)
-        self.assertEqual(postit.read(Node.PROPOSED), Proposal('A', 6))
+        self.role.receive(Accept.create(proposal=Proposal('A', 5)), self.channel)
+        self.assertEqual(self.state.read(Node.PROPOSED), Proposal('A', 6))
 
-        role.receive(Accepted.create(proposal=Proposal('A', 7)), channel)
-        self.assertEqual(postit.read(Node.PROPOSED), Proposal('A', 8))
+        self.role.receive(Accepted.create(proposal=Proposal('A', 7)), self.channel)
+        self.assertEqual(self.state.read(Node.PROPOSED), Proposal('A', 8))
 
     def test_role_behind_sends_sync_message(self):
-        channel = HistoryChannel()
-        postit = InMemoryState()
-        role = Node(ledger=NopLedger(), state=postit)
+        self.role.receive(Prepare.create(proposal=Proposal('A', 2)), self.channel)
 
-        role.receive(Prepare.create(proposal=Proposal('A', 2)), channel)
-
-        self.assertTrue(type(channel.unicast_messages[-1]) is Sync)
+        self.assertTrue(type(self.channel.unicast_messages[-1]) is Sync)
 
 
 if __name__ == "__main__":

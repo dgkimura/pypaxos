@@ -1,15 +1,19 @@
-from collections import MutableMapping
-from os.path import isfile
 from threading import Lock
 from yaml import dump, load
 
+from paxos.utils.storage import Storage
+
 
 class PersistedState(object):
-    def __init__(self, _file, **kwargs):
-        self._dict = dict()
+    __FILENAME = "pypaxos.state"
 
-        self._file = _file
+    def __init__(self, storage=None):
+        self._dict = dict()
         self._lock = Lock()
+        self._storage = Storage(PersistedState.__FILENAME)
+
+        if storage is not None:
+            self._storage = storage
 
         self._refresh()
 
@@ -25,14 +29,13 @@ class PersistedState(object):
             self.write(key, value)
 
     def _refresh(self):
-        if isfile(self._file):
-            with open(self._file, 'r') as f:
-                self._dict = load(f) or dict()
+        try:
+            self._dict = load(self._storage.get()) or dict()
+        except FileNotFoundError:
+            self._dict = dict()
 
     def _flush(self):
-        with open(self._file, 'w+') as f:
-            dump(self._dict, f)
-            f.flush()
+        self._storage.put(dump(self._dict))
 
     def lock(self):
         return self._lock

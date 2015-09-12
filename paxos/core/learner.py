@@ -1,7 +1,7 @@
 # learner.py
 from paxos.core.role import Role
 from paxos.net.message import Accepted, Response, Request, Sync, Synced
-from paxos.utils.ledger import Ledger
+from paxos.utils.ledger import Ledger, LedgerEntry
 
 
 class Learner(Role):
@@ -27,7 +27,8 @@ class Learner(Role):
         accepted_quorum = len(self.accepted_proposals.get(message.proposal))
 
         if accepted_quorum >= minimum_quorum:
-            self._ledger.append(message.proposal.number, message.value)
+            self._ledger.append(LedgerEntry(number=message.proposal.number,
+                                            value=message.value))
             reply = create_reply(proposal=message.proposal)
             channel.unicast(reply)
 
@@ -48,10 +49,15 @@ class Learner(Role):
     def _(self, message, channel):
         """
         """
-        pass
+        sync_proposals = self._ledger[message.proposal.number:]
+        channel.unicast(Synced.create(receive=message.sender,
+                                      sender=message.receiver,
+                                      proposal=sync_proposals))
 
     @Role.receive.register(Synced)
     def _(self, message, channel):
         """
         """
-        pass
+        synced_proposals = message.proposal
+        self._ledger.extend(synced_proposals)
+        self.state.write(Role.PROPOSED, Proposal("sync", message.proposal[-1]))

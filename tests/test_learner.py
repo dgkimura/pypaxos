@@ -5,7 +5,7 @@ from paxos.core.role import Role
 from paxos.net.history_channel import HistoryChannel
 from paxos.net.message import Accepted, Response
 from paxos.net.proposal import Proposal
-from paxos.utils.persistedstate import PersistedState
+from paxos.utils.state import State
 
 from tests.stubs import InMemoryStorage, NopLedger
 
@@ -13,7 +13,7 @@ from tests.stubs import InMemoryStorage, NopLedger
 class TestLearner(TestCase):
     def setUp(self):
         self.channel = HistoryChannel(replicas=['A', 'B', 'C'])
-        self.state = PersistedState(storage=InMemoryStorage("fakefile"))
+        self.state = State(storage=InMemoryStorage("fakefile"))
         self.role = Learner(ledger=NopLedger(), state=self.state)
 
     def test_learner_receives_quorum_of_accepteds(self):

@@ -4,7 +4,7 @@ from paxos.core.acceptor import Acceptor
 from paxos.net.history_channel import HistoryChannel
 from paxos.net.message import Prepare, Promise, Accept, Nack, Accepted
 from paxos.net.proposal import Proposal
-from paxos.utils.persistedstate import PersistedState
+from paxos.utils.state import State
 
 from tests.stubs import InMemoryStorage
 
@@ -12,7 +12,7 @@ from tests.stubs import InMemoryStorage
 class TestAcceptor(TestCase):
     def setUp(self):
         self.channel = HistoryChannel()
-        self.state = PersistedState(storage=InMemoryStorage("fakefile"))
+        self.state = State(storage=InMemoryStorage("fakefile"))
         self.role = Acceptor(state=self.state)
 
     def test_acceptor_receives_higher_prepare(self):

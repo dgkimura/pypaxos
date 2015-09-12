@@ -1,4 +1,4 @@
-from paxos.utils.persistedstate import PersistedState
+from paxos.utils.state import State
 
 
 class InMemoryStorage(object):

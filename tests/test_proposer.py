@@ -5,7 +5,7 @@ from paxos.core.role import Role
 from paxos.net.history_channel import HistoryChannel
 from paxos.net.message import Request, Prepare, Promise, Accept, Accepted
 from paxos.net.proposal import Proposal
-from paxos.utils.persistedstate import PersistedState
+from paxos.utils.state import State
 
 from tests.stubs import InMemoryStorage
 
@@ -13,7 +13,7 @@ from tests.stubs import InMemoryStorage
 class TestProposer(TestCase):
     def setUp(self):
         self.channel = HistoryChannel(replicas=['A', 'B', 'C'])
-        self.state = PersistedState(storage=InMemoryStorage("fakefile"))
+        self.state = State(storage=InMemoryStorage("fakefile"))
         self.role = Proposer(state=self.state)
 
     def test_proposer_doesnt_send_prepare_if_no_value_in_request(self):

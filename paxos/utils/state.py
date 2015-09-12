@@ -4,13 +4,13 @@ from yaml import dump, load
 from paxos.utils.storage import Storage
 
 
-class PersistedState(object):
+class State(object):
     __FILENAME = "pypaxos.state"
 
     def __init__(self, storage=None):
         self._dict = dict()
         self._lock = Lock()
-        self._storage = Storage(PersistedState.__FILENAME)
+        self._storage = Storage(State.__FILENAME)
 
         if storage is not None:
             self._storage = storage

@@ -24,14 +24,14 @@ class Learner(Role):
             .add(message.sender)
 
         minimum_quorum = len(channel.replicas) // 2 + 1
-        accepted_proposals = len(self.accepted_proposals.get(message.proposal))
+        accepted_quorum = len(self.accepted_proposals.get(message.proposal))
 
-        if accepted_proposals >= minimum_quorum:
+        if accepted_quorum >= minimum_quorum:
             self._ledger.append(message.proposal.number, message.value)
             reply = create_reply(proposal=message.proposal)
             channel.unicast(reply)
 
-        if accepted_proposals == minimum_quorum:
+        if accepted_quorum == minimum_quorum:
             # Here we reset for the next round.
             with self.state.lock():
                 self.state.write(Role.PROPOSED,
@@ -41,7 +41,7 @@ class Learner(Role):
             channel.unicast(Request.create(receiver=message.receiver,
                                            sender=message.receiver))
 
-        if accepted_proposals == len(channel.replicas):
+        if accepted_quorum == len(channel.replicas):
             del self.accepted_proposals[message.proposal]
 
     @Role.receive.register(Sync)

@@ -10,7 +10,7 @@ class Storage(object):
 
     def __len__(self):
         length = 0
-        for line in open(self._filename).xreadlines(): length += 1
+        for line in open(self._filename): length += 1
         return length
 
     def append(self, line):

@@ -8,7 +8,10 @@ class Ledger(object):
     __FILENAME = "pypaxos.ledger"
 
     def __init__(self, storage=None):
-        self._storage = storage or Storage(Ledger.__FILENAME)
+        self._storage = Storage(Ledger.__FILENAME)
+
+        if storage is not None:
+            self._storage = storage
 
     def append(self, ledger_entry):
         self._storage.append(ledger_entry)
@@ -17,37 +20,36 @@ class Ledger(object):
         for entry in ledger_entries:
             self.append(entry)
 
-    def __getitem__(self, search):
-        minline = 0
-        maxline = len(self._storage)
-        midline = maxline / 2
+    def get_range(self, start, end=None):
+        storage_range = []
+        start_index = self._getindex(start)
+        end_index = self._getindex(end)
 
-        found = None
+        return [LedgerEntry(*l.split(LedgerEntry.SEPARATOR))
+                for l in self._storage[start_index:end_index]]
 
-        while found != search or (midline < minline or midline > maxline):
-            midline = (maxline - minline) / 2 + minline
+    def _getindex(self, proposal):
+        if proposal is None:
+            return None
 
-            ledger_entry = LedgerEntry(self._storage[midline].split(
-                LedgerEntry.SEPARATOR))
-            found = ledger_entry.number
-
-            if found < search:
-                maxline = midline
-            elif found > search:
-                minline = midline
-
-        if found == search:
-            return ledger_entry
-        raise IndexError("Index proposal {0} not in ledger.".format(search))
+        # TODO: O(log n) Binary Search
+        for index, line in enumerate(self._storage):
+            entry = LedgerEntry(*line.split(LedgerEntry.SEPARATOR))
+            if entry.number == proposal.number:
+                return index
+        return None
 
 
 class LedgerEntry(object):
     SEPARATOR = ","
 
     def __init__(self, number=None, timestamp=None, value=None):
-        self.number = number
+        self.number = int(number)
         self.timestamp = timestamp or datetime.now()
         self.value = value
 
     def __str__(self):
         return "{0},{1},{2}".format(self.number, self.timestamp, self.value)
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__

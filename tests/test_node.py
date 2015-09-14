@@ -4,16 +4,18 @@ from paxos.core.node import Node
 from paxos.net.history_channel import HistoryChannel
 from paxos.net.message import Request, Prepare, Promise, Accept, Accepted, Sync
 from paxos.net.proposal import Proposal
+from paxos.utils.ledger import Ledger
 from paxos.utils.state import State
 
-from tests.stubs import InMemoryStorage, NopLedger
+from tests.stubs import InMemoryStorage
 
 
 class TestNode(TestCase):
     def setUp(self):
         self.channel = HistoryChannel(replicas=['A', 'B', 'C'])
         self.state = State(storage=InMemoryStorage("fakefile"))
-        self.role = Node(ledger=NopLedger(), state=self.state)
+        self.ledger = Ledger(storage=InMemoryStorage("fakefile2"))
+        self.role = Node(ledger=self.ledger, state=self.state)
 
     def test_node_receives_higher_proposals(self):
         self.assertEqual(self.state.read(Node.PROPOSED), Proposal(None, 0))

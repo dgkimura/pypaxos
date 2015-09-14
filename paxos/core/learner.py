@@ -49,8 +49,8 @@ class Learner(Role):
     def _(self, message, channel):
         """
         """
-        sync_proposals = self._ledger[message.proposal.number:]
-        channel.unicast(Synced.create(receive=message.sender,
+        sync_proposals = self._ledger.get_range(message.proposal, None)
+        channel.unicast(Synced.create(receiver=message.sender,
                                       sender=message.receiver,
                                       proposal=sync_proposals))
 

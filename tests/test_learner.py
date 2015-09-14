@@ -3,7 +3,7 @@ from unittest import TestCase, main
 from paxos.core.learner import Learner
 from paxos.core.role import Role
 from paxos.net.history_channel import HistoryChannel
-from paxos.net.message import Accepted, Response, Sync
+from paxos.net.message import Accepted, Response, Sync, Synced
 from paxos.net.proposal import Proposal
 from paxos.utils.ledger import Ledger, LedgerEntry
 from paxos.utils.state import State
@@ -15,7 +15,8 @@ class TestLearner(TestCase):
     def setUp(self):
         self.channel = HistoryChannel(replicas=['A', 'B', 'C'])
         self.state = State(storage=InMemoryStorage("fakefile"))
-        self.ledger = Ledger(storage=InMemoryStorage("fakefile2"))
+        self.ledger_storage = InMemoryStorage("fakefile2")
+        self.ledger = Ledger(storage=self.ledger_storage)
         self.role = Learner(ledger=self.ledger, state=self.state)
 
     def test_learner_receives_quorum_of_accepteds(self):
@@ -48,11 +49,25 @@ class TestLearner(TestCase):
         self.role.receive(Sync.create(proposal=Proposal('A', 1), sender='A'), self.channel)
 
         message = self.channel.unicast_messages[-1]
-        self.assert_is_equal(message.proposal[0], LedgerEntry(number=1, value="value_1"))
-        self.assert_is_equal(message.proposal[1], LedgerEntry(number=2, value="value_2"))
-        self.assert_is_equal(message.proposal[2], LedgerEntry(number=3, value="value_3"))
+        self.assert_equal(message.proposal[0], LedgerEntry(number=1, value="value_1"))
+        self.assert_equal(message.proposal[1], LedgerEntry(number=2, value="value_2"))
+        self.assert_equal(message.proposal[2], LedgerEntry(number=3, value="value_3"))
 
-    def assert_is_equal(self, actual_entry, expected_entry):
+    def test_learner_receives_synced(self):
+        proposals = [LedgerEntry(number=1, value="v_1"),
+                     LedgerEntry(number=2, value="v_2"),
+                     LedgerEntry(number=3, value="v_3")]
+
+        self.role.receive(Synced.create(proposal=proposals, sender='A'), self.channel)
+
+        def get_entry(line):
+            return LedgerEntry(*line.split(LedgerEntry.SEPARATOR))
+
+        self.assert_equal(get_entry(self.ledger_storage[0]), LedgerEntry(number=1, value="v_1"))
+        self.assert_equal(get_entry(self.ledger_storage[1]), LedgerEntry(number=2, value="v_2"))
+        self.assert_equal(get_entry(self.ledger_storage[2]), LedgerEntry(number=3, value="v_3"))
+
+    def assert_equal(self, actual_entry, expected_entry):
         self.assertEqual(actual_entry.number, expected_entry.number)
         self.assertEqual(actual_entry.value, expected_entry.value)
 

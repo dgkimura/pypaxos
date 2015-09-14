@@ -1,6 +1,7 @@
 # learner.py
 from paxos.core.role import Role
 from paxos.net.message import Accepted, Response, Request, Sync, Synced
+from paxos.net.proposal import Proposal
 from paxos.utils.ledger import Ledger, LedgerEntry
 
 

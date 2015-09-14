@@ -22,13 +22,13 @@ class Ledger(object):
 
     def get_range(self, start, end=None):
         storage_range = []
-        start_index = self._getindex(start)
-        end_index = self._getindex(end)
+        start_index = self._get_index(start)
+        end_index = self._get_index(end)
 
         return [LedgerEntry(*l.split(LedgerEntry.SEPARATOR))
                 for l in self._storage[start_index:end_index]]
 
-    def _getindex(self, proposal):
+    def _get_index(self, proposal):
         if proposal is None:
             return None
 
@@ -50,6 +50,3 @@ class LedgerEntry(object):
 
     def __str__(self):
         return "{0},{1},{2}".format(self.number, self.timestamp, self.value)
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__

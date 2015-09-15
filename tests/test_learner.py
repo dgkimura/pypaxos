@@ -67,6 +67,22 @@ class TestLearner(TestCase):
         self.assert_equal(get_entry(self.ledger_storage[1]), LedgerEntry(number=2, value="v_2"))
         self.assert_equal(get_entry(self.ledger_storage[2]), LedgerEntry(number=3, value="v_3"))
 
+    def test_learner_receives_synced_and_merges_results(self):
+        self.ledger_storage.append(str(LedgerEntry(number=1, value="v_1")))
+
+        proposals = [LedgerEntry(number=1, value="v_1"),
+                     LedgerEntry(number=2, value="v_2"),
+                     LedgerEntry(number=3, value="v_3")]
+
+        self.role.receive(Synced.create(proposal=proposals, sender='A'), self.channel)
+
+        def get_entry(line):
+            return LedgerEntry(*line.split(LedgerEntry.SEPARATOR))
+
+        self.assert_equal(get_entry(self.ledger_storage[0]), LedgerEntry(number=1, value="v_1"))
+        self.assert_equal(get_entry(self.ledger_storage[1]), LedgerEntry(number=2, value="v_2"))
+        self.assert_equal(get_entry(self.ledger_storage[2]), LedgerEntry(number=3, value="v_3"))
+
     def assert_equal(self, actual_entry, expected_entry):
         self.assertEqual(actual_entry.number, expected_entry.number)
         self.assertEqual(actual_entry.value, expected_entry.value)

@@ -50,15 +50,20 @@ class Learner(Role):
     def _(self, message, channel):
         """
         """
-        sync_proposals = self._ledger.get_range(message.proposal, None)
-        channel.unicast(Synced.create(receiver=message.sender,
-                                      sender=message.receiver,
-                                      proposal=sync_proposals))
+        with self._ledger.lock():
+            sync_proposals = self._ledger.get_range(message.proposal, None)
+            channel.unicast(Synced.create(receiver=message.sender,
+                                          sender=message.receiver,
+                                          proposal=sync_proposals))
 
     @Role.receive.register(Synced)
     def _(self, message, channel):
         """
         """
         synced_proposals = message.proposal
-        self._ledger.extend(synced_proposals)
-        self.state.write(Role.PROPOSED, Proposal("sync", message.proposal[-1]))
+        with self._ledger.lock():
+            self._ledger.extend(synced_proposals)
+
+        with self.state.lock():
+            self.state.write(Role.PROPOSED,
+                             Proposal("sync", message.proposal[-1]))

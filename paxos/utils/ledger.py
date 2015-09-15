@@ -1,5 +1,6 @@
 # datalog.py
 from datetime import datetime
+from threading import Lock
 
 from paxos.utils.storage import Storage
 
@@ -8,6 +9,7 @@ class Ledger(object):
     __FILENAME = "pypaxos.ledger"
 
     def __init__(self, storage=None):
+        self._lock = Lock()
         self._storage = Storage(Ledger.__FILENAME)
 
         if storage is not None:
@@ -17,7 +19,12 @@ class Ledger(object):
         self._storage.append(ledger_entry)
 
     def extend(self, ledger_entries):
-        for entry in ledger_entries:
+        last = LedgerEntry(-1)
+        if (len(self._storage) > 0):
+            last = LedgerEntry(*self._storage[len(self._storage) - 1]\
+                                   .split(LedgerEntry.SEPARATOR))
+
+        for entry in [n for n in ledger_entries if n.number > last.number]:
             self.append(entry)
 
     def get_range(self, start, end=None):
@@ -38,6 +45,9 @@ class Ledger(object):
             if entry.number == proposal.number:
                 return index
         return None
+
+    def lock(self):
+        return self._lock
 
 
 class LedgerEntry(object):

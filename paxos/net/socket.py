@@ -1,6 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
 from socket import socket, AF_INET, SOCK_STREAM, SHUT_RDWR
 
+from paxos.config.configuration import settings, ADDRESS
+
 
 try:
     import cPickle as pickle
@@ -18,7 +20,7 @@ class Socket(object):
 
     def send(self, ip, data):
         _socket = socket(AF_INET, SOCK_STREAM)
-        _socket.connect(('', Socket.__PORT))
+        _socket.connect((settings[ADDRESS], Socket.__PORT))
         _socket.sendall(self._serializer.dumps(data))
         _socket.shutdown(SHUT_RDWR)
         _socket.close()

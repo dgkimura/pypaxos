@@ -1,13 +1,14 @@
 # channel.py
 from threading import Thread
 
+from paxos.config.configuration import settings, ADDRESS_OF_REPLICAS
 from paxos.net.socket import Socket
 
 
 class Channel(object):
-    def __init__(self, replicas, socket=None):
-        self.replicas = replicas
+    def __init__(self, socket=None):
         self.socket = socket or Socket()
+        self.replicas = settings[ADDRESS_OF_REPLICAS]
 
     def unicast(self, message):
         self.socket.send(message.receiver, message)

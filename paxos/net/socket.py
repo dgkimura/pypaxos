@@ -20,7 +20,7 @@ class Socket(object):
 
     def send(self, ip, data):
         _socket = socket(AF_INET, SOCK_STREAM)
-        _socket.connect((settings[ADDRESS], Socket.__PORT))
+        _socket.connect((ip, Socket.__PORT))
         _socket.sendall(self._serializer.dumps(data))
         _socket.shutdown(SHUT_RDWR)
         _socket.close()
@@ -28,7 +28,7 @@ class Socket(object):
     def receive(self, listener, channel):
         pool = ThreadPoolExecutor(128)
         _socket = socket(AF_INET, SOCK_STREAM)
-        _socket.bind(('', Socket.__PORT))
+        _socket.bind((settings[ADDRESS], Socket.__PORT))
         _socket.listen(Socket.__MAX_BACKLOG_SIZE)
         while True:
             client_socket, client_address = _socket.accept()
@@ -36,6 +36,4 @@ class Socket(object):
 
     def _route_to_listener(self, _socket, listener, channel):
         data = _socket.recv(Socket.__MAX_MESSAGE_SIZE)
-        _socket.shutdown(SHUT_RDWR)
-        _socket.close()
         listener.receive(self._serializer.loads(data), channel)

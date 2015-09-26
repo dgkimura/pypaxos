@@ -3,7 +3,7 @@ from unittest import TestCase, main
 from paxos.core.learner import Learner
 from paxos.core.role import Role
 from paxos.net.history_channel import HistoryChannel
-from paxos.net.message import Accepted, Response, Sync, Synced
+from paxos.net.message import Accepted, Response, Request, Sync, Synced
 from paxos.net.proposal import Proposal
 from paxos.utils.ledger import Ledger, LedgerEntry
 from paxos.utils.state import State
@@ -24,7 +24,8 @@ class TestLearner(TestCase):
         self.role.receive(Accepted.create(proposal=Proposal('A', 1), sender='B'), self.channel)
         self.role.receive(Accepted.create(proposal=Proposal('A', 1), sender='C'), self.channel)
 
-        self.assertTrue(type(self.channel.unicast_messages[0]) is Response)
+        self.assertTrue(type(self.channel.unicast_messages[0]) is Request)
+        self.assertTrue(type(self.channel.unicast_messages[1]) is Response)
 
     def test_learner_receives_quorum_of_accepteds_causes_proposal_to_increment(self):
         self.role.receive(Accepted.create(proposal=Proposal('A', 1), sender='A'), self.channel)

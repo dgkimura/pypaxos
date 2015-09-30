@@ -1,3 +1,5 @@
+from threading import Lock
+
 from paxos.net.message import Sync
 from paxos.net.proposal import Proposal
 from paxos.utils.decorators import methoddispatch
@@ -29,7 +31,7 @@ class Role(object):
     @staticmethod
     def update_proposal(func):
         def wrapper(self, message, channel, **kw):
-            with self.state.lock():
+            with Lock():
                 latest_proposal = self.state.read(Role.PROPOSED)
                 this_proposal = message.proposal
 

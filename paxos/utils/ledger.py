@@ -2,7 +2,11 @@
 from datetime import datetime
 from threading import Lock
 
+from paxos.utils.sharedlock import SharedLock
 from paxos.utils.storage import Storage
+
+
+LEDGER_LOCK = SharedLock()
 
 
 class Ledger(object):
@@ -16,24 +20,42 @@ class Ledger(object):
             self._storage = storage
 
     def append(self, ledger_entry):
+        LEDGER_LOCK.acquire()
+        try:
+            self._append(ledger_entry)
+        finally:
+            LEDGER_LOCK.release()
+
+    def _append(self, ledger_entry):
         self._storage.append(ledger_entry)
 
     def extend(self, ledger_entries):
         last = LedgerEntry(-1)
-        if (len(self._storage) > 0):
-            last = LedgerEntry(*self._storage[len(self._storage) - 1]\
-                                   .split(LedgerEntry.SEPARATOR))
 
-        for entry in [n for n in ledger_entries if n.number > last.number]:
-            self.append(entry)
+        LEDGER_LOCK.acquire()
+        try:
+            if (len(self._storage) > 0):
+                last = LedgerEntry(*self._storage[len(self._storage) - 1]\
+                                       .split(LedgerEntry.SEPARATOR))
+
+            for entry in [n for n in ledger_entries if n.number > last.number]:
+                self._append(entry)
+        finally:
+            LEDGER_LOCK.release()
 
     def get_range(self, start, end=None):
-        storage_range = []
-        start_index = self._get_index(start)
-        end_index = self._get_index(end)
+        LEDGER_LOCK.acquire()
 
-        return [LedgerEntry(*l.split(LedgerEntry.SEPARATOR))
-                for l in self._storage[start_index:end_index]]
+        try:
+            start_index = self._get_index(start)
+            end_index = self._get_index(end)
+
+            storage_range = [LedgerEntry(*l.split(LedgerEntry.SEPARATOR))
+                             for l in self._storage[start_index:end_index]]
+        finally:
+            LEDGER_LOCK.release()
+
+        return storage_range
 
     def _get_index(self, proposal):
         if proposal is None:
@@ -45,9 +67,6 @@ class Ledger(object):
             if entry.number == proposal.number:
                 return index
         return None
-
-    def lock(self):
-        return self._lock
 
 
 class LedgerEntry(object):

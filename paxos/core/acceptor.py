@@ -17,20 +17,19 @@ class Acceptor(Role):
 
         """
         print("RECEIVED message {0}".format(message))
-        with self.state.lock():
-            if message.proposal > self.state.read(Role.PROMISED):
-                self.state.write(Role.PROMISED, message.proposal)
-                reply = create_reply(
-                    sender=message.receiver,
-                    receiver=message.sender,
-                    proposal=message.proposal,
-                    accepted_proposal=self.state.read(Role.ACCEPTED),
-                    value=self.state.read(Role.VALUE))
-                channel.unicast(reply)
-            else:
-                reply = Nack.create(sender=message.receiver,
-                                    receiver=message.sender)
-                channel.unicast(reply)
+        if message.proposal > self.state.read(Role.PROMISED):
+            self.state.write(Role.PROMISED, message.proposal)
+            reply = create_reply(
+                sender=message.receiver,
+                receiver=message.sender,
+                proposal=message.proposal,
+                accepted_proposal=self.state.read(Role.ACCEPTED),
+                value=self.state.read(Role.VALUE))
+            channel.unicast(reply)
+        else:
+            reply = Nack.create(sender=message.receiver,
+                                receiver=message.sender)
+            channel.unicast(reply)
 
     @Role.receive.register(Accept)
     @Role.update_proposal
@@ -43,19 +42,18 @@ class Acceptor(Role):
 
         """
         print("RECEIVED message {0}".format(message))
-        with self.state.lock():
-            if message.proposal >= self.state.read(Role.PROMISED):
-                if message.proposal > self.state.read(Role.ACCEPTED):
-                    self.state.write(Role.ACCEPTED, message.proposal)
-                    self.state.write(Role.VALUE, message.value)
+        if message.proposal >= self.state.read(Role.PROMISED):
+            if message.proposal > self.state.read(Role.ACCEPTED):
+                self.state.write(Role.ACCEPTED, message.proposal)
+                self.state.write(Role.VALUE, message.value)
 
-                reply = create_reply(sender=message.receiver,
-                                     value=self.state.read(Role.VALUE),
-                                     proposal=message.proposal)
-                channel.broadcast(reply)
-            else:
-                reply = Nack.create(sender=message.receiver,
-                                    receiver=message.sender,
-                                    value=self.state.read(Role.VALUE),
-                                    proposal=message.proposal)
-                channel.unicast(reply)
+            reply = create_reply(sender=message.receiver,
+                                 value=self.state.read(Role.VALUE),
+                                 proposal=message.proposal)
+            channel.broadcast(reply)
+        else:
+            reply = Nack.create(sender=message.receiver,
+                                receiver=message.sender,
+                                value=self.state.read(Role.VALUE),
+                                proposal=message.proposal)
+            channel.unicast(reply)

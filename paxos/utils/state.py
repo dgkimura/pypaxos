@@ -1,7 +1,11 @@
 from threading import Lock
 from yaml import dump, load
 
+from paxos.utils.sharedlock import SharedLock
 from paxos.utils.storage import Storage
+
+
+STATE_LOCK = SharedLock()
 
 
 class State(object):
@@ -29,13 +33,17 @@ class State(object):
             self.write(key, value)
 
     def _refresh(self):
+        STATE_LOCK.acquire()
         try:
             self._dict = load(self._storage.get()) or dict()
         except FileNotFoundError:
             self._dict = dict()
+        finally:
+            STATE_LOCK.release()
 
     def _flush(self):
-        self._storage.put(dump(self._dict))
-
-    def lock(self):
-        return self._lock
+        STATE_LOCK.acquire()
+        try:
+            self._storage.put(dump(self._dict))
+        finally:
+            STATE_LOCK.release()

@@ -6,7 +6,11 @@ class Storage(object):
         self._filename = filename
 
     def __getitem__(self, index):
-        return getline(self._filename, index)
+        return getline(self._filename, index + 1)
+
+    def __iter__(self):
+        for i in range(len(self)):
+            yield self.__getitem__(i)
 
     def __len__(self):
         length = 0

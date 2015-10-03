@@ -68,9 +68,13 @@ class Ledger(object):
                 return index
         return None
 
+    def __iter__(self):
+        for line in self._storage:
+            yield LedgerEntry(*line.split(LedgerEntry.SEPARATOR))
+
 
 class LedgerEntry(object):
-    SEPARATOR = ","
+    SEPARATOR = "|"
 
     def __init__(self, number=None, timestamp=None, value=None):
         self.number = int(number)
@@ -78,4 +82,5 @@ class LedgerEntry(object):
         self.value = value
 
     def __str__(self):
-        return "{0},{1},{2}".format(self.number, self.timestamp, self.value)
+        return "{1}{0}{2}{0}{3}".format(LedgerEntry.SEPARATOR,
+            self.number, self.timestamp, self.value)

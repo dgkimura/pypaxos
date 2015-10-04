@@ -35,8 +35,3 @@ class Proposal(object):
 
     def next(self):
         return Proposal(self.author, self.number + 1)
-
-
-class InitialProposal(Proposal):
-    def __init__(self, author):
-        super(InitialProposal, self).__init__(author, 0)

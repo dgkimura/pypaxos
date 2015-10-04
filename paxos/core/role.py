@@ -4,6 +4,7 @@ from paxos.net.message import Sync
 from paxos.net.proposal import Proposal
 from paxos.utils.decorators import methoddispatch
 from paxos.utils.state import State
+from paxos.utils.notification import Notification
 
 
 class Role(object):
@@ -21,6 +22,9 @@ class Role(object):
 
         # List of values to be associated with proposal
         self.requested_values = []
+
+        # Notification of finished proposal
+        self.notification = Notification()
 
     @methoddispatch
     def receive(self, message, channel):

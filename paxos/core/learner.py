@@ -35,6 +35,7 @@ class Learner(Role):
 
             channel.unicast(Request.create(receiver=message.receiver,
                                            sender=message.receiver))
+            self.notification.send(create_reply(proposal=message.proposal))
 
         if accepted_quorum >= minimum_quorum:
             self._ledger.append(LedgerEntry(number=message.proposal.number,

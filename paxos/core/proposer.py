@@ -10,7 +10,7 @@ class Proposer(Role):
         self.received_promises = dict()
 
     @Role.receive.register(Request)
-    def _(self, message, channel, create_reply=Prepare.create):
+    def _(self, message, channel, create_reply=Prepare.create, async=True):
         """Prepare Phase.
 
         A proposer selects a proposal number n and sends a prepare request
@@ -22,9 +22,13 @@ class Proposer(Role):
             self.requested_values.append(message.value)
 
         if self.requested_values:
+            current_proposal = self.state.read(Role.PROPOSED)
             reply = create_reply(sender=message.receiver,
-                                 proposal=self.state.read(Role.PROPOSED))
+                                 proposal=current_proposal)
             channel.broadcast(reply)
+
+            if not async:
+                self.notification.wait(current_proposal)
 
     @Role.receive.register(Promise)
     @Role.update_proposal

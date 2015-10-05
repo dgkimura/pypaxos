@@ -1,4 +1,4 @@
-from linecache import getline
+from linecache import getline, checkcache
 
 
 class Storage(object):
@@ -6,6 +6,7 @@ class Storage(object):
         self._filename = filename
 
     def __getitem__(self, index):
+        checkcache()
         return getline(self._filename, index + 1)
 
     def __iter__(self):

@@ -79,7 +79,7 @@ class LedgerEntry(object):
     def __init__(self, number=None, timestamp=None, value=None):
         self.number = int(number)
         self.timestamp = timestamp or datetime.now()
-        self.value = value
+        self.value = value and value.strip()
 
     def __str__(self):
         return "{1}{0}{2}{0}{3}".format(LedgerEntry.SEPARATOR,

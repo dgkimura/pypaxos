@@ -1,11 +1,8 @@
-from paxos.app.protocol import Protocol
-
-
 class Number(object):
-    def __init__(self, name, obj, channel):
+    def __init__(self, name, obj, protocol):
         self._obj = obj
         self._name = name
-        self._protocol = Protocol(channel)
+        self._protocol = protocol
 
     def __add__(self, other):
         self._protocol.sync(self._name)

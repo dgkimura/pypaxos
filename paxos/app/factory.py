@@ -5,8 +5,8 @@ from paxos.app.types.numbers import Number
 
 
 class Dispatcher(object):
-    def __init__(self, channel):
-        self.channel = channel
+    def __init__(self, protocol):
+        self.protocol = protocol
 
     @methoddispatch
     def create(self, obj, name):
@@ -17,12 +17,12 @@ class Dispatcher(object):
 class Factory(Dispatcher):
     @Dispatcher.create.register(int)
     def _(self, obj, name):
-        return Number(name, obj, self.channel)
+        return Number(name, obj, self.protocol)
 
     @Dispatcher.create.register(dict)
     def _(self, obj, name):
-        return Dict(name, obj, self.channel)
+        return Dict(name, obj, self.protocol)
 
     @Dispatcher.create.register(list)
     def _(self, obj, name):
-        return List(name, obj, self.channel)
+        return List(name, obj, self.protocol)

@@ -1,14 +1,12 @@
 from collections import MutableSequence
 from copy import deepcopy
 
-from paxos.app.protocol import Protocol
-
 
 class Dict(MutableSequence):
-    def __init__(self, name, obj, channel):
+    def __init__(self, name, obj, protocol):
         self._obj = obj
         self._name = name
-        self._protocol = Protocol(channel)
+        self._protocol = protocol
 
     def __getitem__(self, key):
         self._protocol.sync(self._name)

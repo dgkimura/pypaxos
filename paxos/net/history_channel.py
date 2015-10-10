@@ -4,6 +4,7 @@ class HistoryChannel(object):
     def __init__(self, replicas=None):
         self.broadcast_messages = []
         self.unicast_messages = []
+        self.loopback_messages = []
         self.replicas = replicas or []
 
     def unicast(self, message):
@@ -11,3 +12,6 @@ class HistoryChannel(object):
 
     def broadcast(self, message):
         self.broadcast_messages.append(message)
+
+    def loopback(self, message):
+        self.loopback_messages.append(message)

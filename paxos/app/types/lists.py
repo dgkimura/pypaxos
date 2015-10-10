@@ -8,7 +8,12 @@ class List(MutableSequence):
         self._name = name
         self._protocol = protocol
 
+        if obj:
+            self._protocol.update(self._name, self._obj)
+
     def __len__(self):
+        self._protocol.sync(self._name)
+        self._obj = self._protocol.get(self._name) or []
         return len(self._obj)
 
     def __getitem__(self, i):

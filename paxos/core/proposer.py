@@ -1,6 +1,7 @@
 # proposer.py
 from paxos.core.role import Role
 from paxos.net.message import Request, Prepare, Promise, Accept, Accepted, Response
+from paxos.utils.logger import LOG
 from paxos.utils.selector import Selector
 
 
@@ -19,7 +20,7 @@ class Proposer(Role):
         with number n to a majority of acceptors.
 
         """
-        print("RECEIVED message {0}".format(message))
+        LOG.debug("RECEIVED message {0}".format(message))
         if message.value:
             self.selector.add(message.value)
 
@@ -44,7 +45,7 @@ class Proposer(Role):
         is any value if the responses reported no proposals.
 
         """
-        print("RECEIVED message {0}".format(message))
+        LOG.debug("RECEIVED message {0}".format(message))
         self.received_promises.setdefault(message.proposal, set()) \
             .add(message.sender)
 

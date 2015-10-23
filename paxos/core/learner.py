@@ -3,6 +3,7 @@ from paxos.core.role import Role
 from paxos.net.message import Accepted, Response, Request, Sync, Synced
 from paxos.net.proposal import Proposal
 from paxos.utils.ledger import Ledger, LedgerEntry
+from paxos.utils.logger import LOG
 
 
 class Learner(Role):
@@ -20,7 +21,7 @@ class Learner(Role):
         proposal has been accepted by a majority of acceptors.
 
         """
-        print("RECEIVED message {0}".format(message))
+        LOG.debug("RECEIVED message {0}".format(message))
         self.accepted_proposals.setdefault(message.proposal, set()) \
             .add(message.sender)
 

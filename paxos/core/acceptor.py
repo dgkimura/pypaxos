@@ -1,6 +1,7 @@
 # acceptor.py
 from paxos.core.role import Role
 from paxos.net.message import Prepare, Promise, Accept, Nack, Accepted
+from paxos.utils.logger import LOG
 
 
 class Acceptor(Role):
@@ -16,7 +17,7 @@ class Acceptor(Role):
         (if any) that it has accepted.
 
         """
-        print("RECEIVED message {0}".format(message))
+        LOG.debug("RECEIVED message {0}".format(message))
         if message.proposal > self.state.read(Role.PROMISED):
             self.state.write(Role.PROMISED, message.proposal)
             reply = create_reply(
@@ -41,7 +42,7 @@ class Acceptor(Role):
         request having a number greater than n.
 
         """
-        print("RECEIVED message {0}".format(message))
+        LOG.debug("RECEIVED message {0}".format(message))
         if message.proposal >= self.state.read(Role.PROMISED):
             if message.proposal > self.state.read(Role.ACCEPTED):
                 self.state.write(Role.ACCEPTED, message.proposal)

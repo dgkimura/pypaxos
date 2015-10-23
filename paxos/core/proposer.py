@@ -1,6 +1,7 @@
 # proposer.py
 from paxos.core.role import Role
 from paxos.net.message import Request, Prepare, Promise, Accept, Accepted, Response
+from paxos.utils.selector import Selector
 
 
 class Proposer(Role):
@@ -8,6 +9,7 @@ class Proposer(Role):
         super(Proposer, self).__init__(*args, **kwargs)
         self.highest_proposal = None
         self.received_promises = dict()
+        self.selector = Selector()
 
     @Role.receive.register(Request)
     def _(self, message, channel, create_reply=Prepare.create, async=True):
@@ -19,9 +21,9 @@ class Proposer(Role):
         """
         print("RECEIVED message {0}".format(message))
         if message.value:
-            self.requested_values.append(message.value)
+            self.selector.add(message.value)
 
-        if self.requested_values:
+        if not self.selector.is_empty():
             current_proposal = self.state.read(Role.PROPOSED)
             reply = create_reply(sender=message.receiver,
                                  proposal=current_proposal)
@@ -46,14 +48,13 @@ class Proposer(Role):
         self.received_promises.setdefault(message.proposal, set()) \
             .add(message.sender)
 
-        value = self.requested_values and self.requested_values.pop(0) or None
-
         if (self.highest_proposal is None or
             message.accepted_proposal >= self.highest_proposal):
             self.highest_proposal = message.proposal
             if message.value:
-                value = message.value
-                self.requested_values.append(value)
+                self.selector.set(message.proposal, message.value)
+
+        value = self.selector.get(message.proposal)
 
         minimum_quorum = len(channel.replicas) // 2 + 1
         received_promises = len(self.received_promises.get(message.proposal))

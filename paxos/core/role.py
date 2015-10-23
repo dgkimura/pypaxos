@@ -20,9 +20,6 @@ class Role(object):
         self.state.set_default(Role.ACCEPTED, Proposal(author, -1))
         self.state.set_default(Role.VALUE, "")
 
-        # List of values to be associated with proposal
-        self.requested_values = []
-
         # Notification of finished proposal
         self.notification = Notification()
 

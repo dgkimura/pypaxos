@@ -16,35 +16,42 @@ You can install package using setup tools.
 $ python setup.py install
 ```
 
-Algorithm
+Getting Started
 ==============
 
-Phases
-- 1a: Prepare: Proposer creates proposal N
-- 1b: Promise: Acceptor sends promise for proposal N. Promise includes
-      previous proposal/value V.
-- 2a: Accept Request
-- 2b: Accepted
-
-Phase 1 is unnecessary after the first round with stable leader and when
-including instance number I in Promise, Accept, and Accepted.
-
+You can configure the paxos.json for a set of replicas. Below is an example config of a 3 replica cluster for replica "192.168.0.1".
 
 ```
-Client   Proposer      Acceptor     Learner
-   |         |          |  |  |       |  | --- First Request ---
-   X-------->|          |  |  |       |  |  Request
-   |         X--------->|->|->|       |  |  Prepare(N)
-   |         |<---------X--X--X       |  |  Promise(N,I,{Va,Vb,Vc})
-   |         X--------->|->|->|       |  |  Accept!(N,I,Vm)
-   |         |<---------X--X--X------>|->|  Accepted(N,I,Vm)
-   |<---------------------------------X--X  Response
-   |         |          |  |  |       |  |  --- Following Requests ---
-   X-------->|          |  |  |       |  |  Request
-   |         X--------->|->|->|       |  |  Accept!(N,I+1,W)
-   |         |<---------X--X--X------>|->|  Accepted(N,I+1,W)
-   |<---------------------------------X--X  Response
-   |         |          |  |  |       |  |
+{
+    "address": "192.168.0.1",
+    "address_of_replicas": ["192.168.0.1", "192.168.0.2", "192.168.0.3"],
+}
+
+```
+
+An application running on each replica starts the paxos service by simply creating a Store instance.
+
+```python
+>>> from paxos.app.store import Store
+>>> store = Store()
+
+```
+
+We can replicate data by assigning and updating values on the store object. Basic python types are supported (e.g. lists, sets, dicts, ints).
+
+```python
+
+>>> store.mylist = []
+>>> store.mylist.append("Donald Duck")
+
+```
+
+We can access data by simply requesting the attribute previously assigned.
+
+```python
+
+>>> store.mylist[0]
+"Donald Duck"
 
 ```
 

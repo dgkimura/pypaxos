@@ -8,8 +8,8 @@ from paxos.net.message import Request
 class Protocol(object):
     def __init__(self, channel=None, adapter=None, serializer=dump):
         self._serialize = serializer
-        self._channel = channel or Channel()
-        self._adapter = adapter or Adapter()
+        self._channel = channel if channel is not None else Channel()
+        self._adapter = adapter if adapter is not None else  Adapter()
 
     def sync(self, name):
         val = "READ({0})".format(name)

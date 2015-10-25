@@ -7,8 +7,8 @@ from paxos.net.channel import Channel
 
 class Store(object):
     def __init__(self, adapter=None, channel=None):
-        self.__dict__['adapter'] = adapter or Adapter()
-        self.__dict__['channel'] = channel or Channel()
+        self.__dict__['adapter'] = adapter if adapter is not None else Adapter()
+        self.__dict__['channel'] = channel if channel is not None else Channel()
         self.__dict__['protocol'] = Protocol(self.channel)
         self.__dict__['factory'] = Factory(self.protocol)
         self.channel.connect(Node())

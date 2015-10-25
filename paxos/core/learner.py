@@ -10,7 +10,8 @@ class Learner(Role):
     def __init__(self, *args, ledger=None, **kwargs):
         super(Learner, self).__init__(*args, **kwargs)
         self.accepted_proposals = dict()
-        self._ledger = ledger or Ledger()
+
+        self._ledger = ledger if ledger is not None else Ledger()
 
     @Role.receive.register(Accepted)
     @Role.update_proposal

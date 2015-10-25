@@ -8,7 +8,7 @@ from paxos.utils.storage import Storage
 class Adapter(object):
     def __init__(self, ledger=None, deserializer=load):
         self.state = State(Storage("pypaxos.checkpoint"))
-        self.ledger = ledger or Ledger()
+        self.ledger = ledger if ledger is not None else Ledger()
         self._deserialize = deserializer
 
     def read(self, key):

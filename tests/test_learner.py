@@ -84,6 +84,16 @@ class TestLearner(TestCase):
         self.assert_equal(get_entry(self.ledger_storage[1]), LedgerEntry(number=2, value="v_2"))
         self.assert_equal(get_entry(self.ledger_storage[2]), LedgerEntry(number=3, value="v_3"))
 
+    def test_learner_sync_messages(self):
+        for i in range(Learner.SYNC_SIZE + 1):
+            self.ledger.append(LedgerEntry(number=i, value="value_{0}".format(i)))
+
+        self.role.receive(Sync.create(proposal=Proposal('A', 1), sender='A'), self.channel)
+
+        message = self.channel.unicast_messages[-1]
+        self.assertEqual(Learner.SYNC_SIZE, len(message.proposal))
+        self.assertTrue(not message.finished)
+
     def assert_equal(self, actual_entry, expected_entry):
         self.assertEqual(actual_entry.number, expected_entry.number)
         self.assertEqual(actual_entry.value, expected_entry.value)

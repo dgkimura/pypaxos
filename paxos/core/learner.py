@@ -7,6 +7,8 @@ from paxos.utils.logger import LOG
 
 
 class Learner(Role):
+    SYNC_SIZE = 8
+
     def __init__(self, *args, ledger=None, **kwargs):
         super(Learner, self).__init__(*args, **kwargs)
         self.accepted_proposals = dict()
@@ -52,16 +54,28 @@ class Learner(Role):
     def _(self, message, channel):
         """
         """
-        sync_proposals = self._ledger.get_range(message.proposal, None)
+        LOG.debug("RECEIVED message {0}".format(message))
+        sync_proposals = self._ledger.get_range(message.proposal)[:Learner.SYNC_SIZE]
+        is_finished = sync_proposals[-1] == self.state.read(Role.ACCEPTED)
+
         channel.unicast(Synced.create(receiver=message.sender,
                                       sender=message.receiver,
-                                      proposal=sync_proposals))
+                                      proposal=sync_proposals,
+                                      finished=is_finished))
 
     @Role.receive.register(Synced)
     def _(self, message, channel):
         """
         """
+        LOG.debug("RECEIVED message {0}".format(message))
         synced_proposals = message.proposal
         self._ledger.extend(synced_proposals)
 
-        self.state.write(Role.PROPOSED, Proposal("sync", message.proposal[-1]))
+        self.state.write(Role.PROPOSED, Proposal("sync", message.proposal[-1].number))
+        self.state.write(Role.PROMISED, Proposal("sync", message.proposal[-1].number))
+        self.state.write(Role.ACCEPTED, Proposal("sync", message.proposal[-1].number))
+
+        if not message.finished:
+            channel.unicast(Sync.create(receiver=message.sender,
+                                        sender=message.receiver,
+                                        proposal=self.state.read(Role.ACCEPTED)))

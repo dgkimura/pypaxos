@@ -72,6 +72,9 @@ class Ledger(object):
         for line in self._storage:
             yield LedgerEntry(*line.split(LedgerEntry.SEPARATOR))
 
+    def __len__(self):
+        return len(self._storage)
+
 
 class LedgerEntry(object):
     SEPARATOR = "|"

@@ -12,7 +12,7 @@ except ImportError:
 
 class Socket(object):
     __PORT = 8081
-    __MAX_MESSAGE_SIZE = 65536
+    __MAX_MESSAGE_SIZE = 1073741824
     __MAX_BACKLOG_SIZE = 5
 
     def __init__(self, serializer=pickle):
@@ -20,10 +20,13 @@ class Socket(object):
 
     def send(self, ip, data):
         _socket = socket(AF_INET, SOCK_STREAM)
-        _socket.connect((ip, Socket.__PORT))
-        _socket.sendall(self._serializer.dumps(data))
-        _socket.shutdown(SHUT_RDWR)
-        _socket.close()
+        try:
+            _socket.connect((ip, Socket.__PORT))
+            _socket.sendall(self._serializer.dumps(data))
+            _socket.shutdown(SHUT_RDWR)
+            _socket.close()
+        except ConnectionRefusedError:
+            pass
 
     def receive(self, listener, channel):
         pool = ThreadPoolExecutor(128)

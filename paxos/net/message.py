@@ -21,8 +21,8 @@ class Message(object):
         return klass(sender, receiver, proposal, accepted_proposal, value)
 
     def __str__(self):
-        return "{0}: \tproposal:{1} \tvalue:{2}".format(
-                self.__class__, self.proposal, self.value)
+        return "[{0}] src:{1}\tproposal:{2} \tvalue:{3}".format(
+                self.__class__.__name__, self.sender, self.proposal, self.value)
 
 
 class Request(Message):
@@ -58,4 +58,8 @@ class Sync(Message):
 
 
 class Synced(Message):
-    pass
+    @classmethod
+    def create(klass, finished=True, **kwargs):
+        obj = super(Synced, klass).create(**kwargs)
+        obj.finished = finished
+        return obj

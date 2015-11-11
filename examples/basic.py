@@ -1,17 +1,15 @@
 # basic.py
-import socket
 import time
 
-from paxos.core.node import Node
+from paxos.config.configuration import ADDRESS
 from paxos.net.channel import Channel
-from paxos.net.message import Request, Prepare, Promise, Accept, Accepted
+from paxos.net.message import Request
 
 
 def main():
-    host = socket.gethostbyname(socket.gethostname())
+    host = ADDRESS
 
     channel = Channel()
-    channel.connect(Node())
 
     while True:
         print("fast requests...")

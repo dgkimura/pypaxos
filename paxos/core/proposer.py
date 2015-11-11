@@ -13,7 +13,7 @@ class Proposer(Role):
         self.selector = Selector()
 
     @Role.receive.register(Request)
-    def _(self, message, channel, create_reply=Prepare.create, async=True):
+    def _(self, message, channel, create_reply=Prepare.create):
         """Prepare Phase.
 
         A proposer selects a proposal number n and sends a prepare request
@@ -29,9 +29,7 @@ class Proposer(Role):
             reply = create_reply(sender=message.receiver,
                                  proposal=current_proposal)
             channel.broadcast(reply)
-
-            if not async:
-                self.notification.wait(current_proposal)
+            self.notification.wait(current_proposal)
 
     @Role.receive.register(Promise)
     @Role.update_proposal

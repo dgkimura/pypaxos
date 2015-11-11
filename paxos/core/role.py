@@ -1,5 +1,3 @@
-from threading import Lock
-
 from paxos.net.message import Sync
 from paxos.net.proposal import Proposal
 from paxos.utils.decorators import methoddispatch
@@ -32,18 +30,17 @@ class Role(object):
     @staticmethod
     def update_proposal(func):
         def wrapper(self, message, channel, **kw):
-            with Lock():
-                latest_proposal = self.state.read(Role.PROPOSED)
-                this_proposal = message.proposal
+            latest_proposal = self.state.read(Role.PROPOSED)
+            this_proposal = message.proposal
 
-                if this_proposal.number == latest_proposal.number + 1:
-                    self.state.write(Role.PROPOSED, this_proposal.next())
+            if this_proposal.number == latest_proposal.number + 1:
+                self.state.write(Role.PROPOSED, this_proposal.next())
 
             if this_proposal.number > latest_proposal.number + 1:
                 # we're behind and need to catch up
                 channel.unicast(Sync.create(receiver=message.sender,
                                             sender=message.receiver,
                                             proposal=latest_proposal))
-            else:
-                func(self, message, channel, **kw)
+                #self.notification.wait(Proposal("sync", -2))
+            func(self, message, channel, **kw)
         return wrapper

@@ -1,7 +1,7 @@
 import logging
 from logging import StreamHandler
 
-from paxos.config.configuration import settings, LOG_LEVEL, LOG_DEBUG, LOG_INFO
+from paxos.config.configuration import LOG_LEVEL, LOG_DEBUG, LOG_INFO
 
 
 class Logger(object):
@@ -15,9 +15,9 @@ class Logger(object):
         self.logger.addHandler(handle)
 
     def _set_level(self, obj):
-        if settings[LOG_LEVEL] == LOG_DEBUG:
+        if LOG_LEVEL == LOG_DEBUG:
             obj.setLevel(logging.DEBUG)
-        elif settings[LOG_LEVEL] == LOG_INFO:
+        elif LOG_LEVEL == LOG_INFO:
             obj.setLevel(logging.INFO)
 
     def debug(self, log):

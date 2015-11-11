@@ -35,3 +35,6 @@ class Proposal(object):
 
     def next(self):
         return Proposal(self.author, self.number + 1)
+
+
+SYNC_PROPOSAL = Proposal("sync", -2)

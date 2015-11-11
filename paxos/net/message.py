@@ -1,5 +1,5 @@
 # message.py
-from paxos.config.configuration import settings, ADDRESS
+from paxos.config.configuration import ADDRESS
 from paxos.net.proposal import default_proposal
 
 
@@ -16,13 +16,13 @@ class Message(object):
     def create(klass, sender=None, receiver=None, proposal=None,
                accepted_proposal=None, value=None):
         accepted_proposal = accepted_proposal or default_proposal()
-        sender = sender or settings[ADDRESS]
-        receiver = receiver or settings[ADDRESS]
+        sender = sender or ADDRESS
+        receiver = receiver or ADDRESS
         return klass(sender, receiver, proposal, accepted_proposal, value)
 
     def __str__(self):
-        return "[{0}] src:{1}\tproposal:{2} \tvalue:{3}".format(
-                self.__class__.__name__, self.sender, self.proposal, self.value)
+        return "[{0}] src:{1} \tdst:{2} \tproposal:{3} \tvalue:{4}".format(
+                self.__class__.__name__, self.sender, self.receiver, self.proposal, self.value)
 
 
 class Request(Message):

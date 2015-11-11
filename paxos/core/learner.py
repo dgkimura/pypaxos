@@ -1,7 +1,7 @@
 # learner.py
 from paxos.core.role import Role
 from paxos.net.message import Accepted, Response, Request, Sync, Synced
-from paxos.net.proposal import Proposal
+from paxos.net.proposal import Proposal, SYNC_PROPOSAL
 from paxos.utils.ledger import Ledger, LedgerEntry
 from paxos.utils.logger import LOG
 
@@ -52,30 +52,37 @@ class Learner(Role):
 
     @Role.receive.register(Sync)
     def _(self, message, channel):
-        """
-        """
+        """Handle request from out-of-sync replica""" 
+
         LOG.debug("RECEIVED message {0}".format(message))
-        sync_proposals = self._ledger.get_range(message.proposal)[:Learner.SYNC_SIZE]
-        is_finished = sync_proposals[-1] == self.state.read(Role.ACCEPTED)
+        proposals = self._ledger.get_range(message.proposal)[:Learner.SYNC_SIZE]
+        is_finished = proposals[-1] == self.state.read(Role.ACCEPTED)
 
         channel.unicast(Synced.create(receiver=message.sender,
                                       sender=message.receiver,
-                                      proposal=sync_proposals,
+                                      proposal=proposals,
                                       finished=is_finished))
 
     @Role.receive.register(Synced)
     def _(self, message, channel):
-        """
-        """
+        """Handle response for updating this replica"""
+
         LOG.debug("RECEIVED message {0}".format(message))
         synced_proposals = message.proposal
         self._ledger.extend(synced_proposals)
 
-        self.state.write(Role.PROPOSED, Proposal("sync", message.proposal[-1].number))
-        self.state.write(Role.PROMISED, Proposal("sync", message.proposal[-1].number))
-        self.state.write(Role.ACCEPTED, Proposal("sync", message.proposal[-1].number))
+        current_proposal = Proposal("sync", synced_proposals[-1].number)
+        next_proposal = Proposal("sync", synced_proposals[-1].number + 1)
+
+        self.state.write(Role.PROPOSED, current_proposal)
+        self.state.write(Role.PROMISED, current_proposal)
+        self.state.write(Role.ACCEPTED, current_proposal)
 
         if not message.finished:
-            channel.unicast(Sync.create(receiver=message.sender,
-                                        sender=message.receiver,
-                                        proposal=self.state.read(Role.ACCEPTED)))
+            channel.unicast(Sync.create(
+                receiver=message.sender,
+                sender=message.receiver,
+                proposal=self.state.read(Role.ACCEPTED)))
+        else:
+            self.state.write(Role.PROPOSED, next_proposal)
+            self.notification.send(Response.create(proposal=SYNC_PROPOSAL))

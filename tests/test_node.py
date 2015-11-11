@@ -10,12 +10,18 @@ from paxos.utils.state import State
 from tests.stubs import InMemoryStorage
 
 
+class ImmediateNotificiation(object):
+    def wait(self, proposal):
+        pass
+
+
 class TestNode(TestCase):
     def setUp(self):
         self.channel = HistoryChannel(replicas=['A', 'B', 'C'])
         self.state = State(storage=InMemoryStorage("fakefile"))
         self.ledger = Ledger(storage=InMemoryStorage("fakefile2"))
         self.role = Node(ledger=self.ledger, state=self.state)
+        self.role.notification = ImmediateNotificiation()
 
     def test_node_receives_higher_proposals(self):
         self.assertEqual(self.state.read(Node.PROPOSED), Proposal(None, 0))
@@ -35,7 +41,7 @@ class TestNode(TestCase):
     def test_role_behind_sends_sync_message(self):
         self.role.receive(Prepare.create(proposal=Proposal('A', 2)), self.channel)
 
-        self.assertTrue(type(self.channel.unicast_messages[-1]) is Sync)
+        self.assertTrue(type(self.channel.unicast_messages[0]) is Sync)
 
 
 if __name__ == "__main__":

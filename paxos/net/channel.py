@@ -1,36 +1,37 @@
 # channel.py
-from threading import Thread
-
-from paxos.config.configuration import settings, ADDRESS_OF_REPLICAS
-from paxos.net.socket import Socket
+from paxos.config.configuration import ADDRESS, ADDRESS_OF_REPLICAS
+from paxos.core.node import Node
+from paxos.net.receiver import Receiver
+from paxos.net.endpoint import Remote, Local
 
 
 class Channel(object):
-    def __init__(self, socket=None):
-        self.socket = socket or Socket()
-        self.replicas = settings[ADDRESS_OF_REPLICAS]
-        self.listeners = []
+    """Channel allows roles to communicate through messages.
+
+    Outgoing messages are sent to roles through remote and local endpoints.
+    Incoming messages are caught by the receiver and sent to local endpoints.
+
+    """
+
+    def __init__(self, replicas=None, receiver=None):
+        self.receiver = receiver
+        self.replicas = replicas
+
+        if receiver is None:
+            self.receiver = Receiver(ADDRESS, self)
+        if replicas is None:
+            self.replicas = dict((ip, Remote(ip)) for ip in ADDRESS_OF_REPLICAS)
+            self.replicas[ADDRESS] = Local(Node(), self)
+
+        self.receiver.start()
 
     def unicast(self, message):
-        self.socket.send(message.receiver, message)
+        self.replicas[message.receiver].send(message)
 
     def loopback(self, message):
-        for l in self.listeners:
-            l.receive(message, self, async=False)
+        self.replicas[ADDRESS].send(message)
 
     def broadcast(self, message):
-        for r in self.replicas:
-            message.receiver = r
-            self.socket.send(r, message)
-
-    def connect(self, listener):
-        """Connect listener to this Channel.
-        
-        When connected, messages sent to this channel will be routed using the
-        listener's receive method. Socket receive is a blocking call.
-
-        """
-        self.listeners.append(listener)
-        t = Thread(target=self.socket.receive, args=(listener, self))
-        t.daemon = True
-        t.start()
+        for ip, replica in self.replicas.items():
+            message.receiver = ip
+            replica.send(message)

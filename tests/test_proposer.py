@@ -10,17 +10,23 @@ from paxos.utils.state import State
 from tests.stubs import InMemoryStorage
 
 
+class ImmediateNotificiation(object):
+    def wait(self, proposal):
+        pass
+
+
 class TestProposer(TestCase):
     def setUp(self):
         self.channel = HistoryChannel(replicas=['A', 'B', 'C'])
         self.state = State(storage=InMemoryStorage("fakefile"))
         self.role = Proposer(state=self.state)
+        self.role.notification = ImmediateNotificiation()
 
     def test_proposer_doesnt_send_prepare_if_no_value_in_request(self):
         self.role.receive(Request.create(), self.channel)
         self.assertEqual(len(self.channel.broadcast_messages), 0)
 
-    def test_prposer_sends_initial_prepare(self):
+    def test_proposer_sends_initial_prepare(self):
         self.role.receive(Request.create(value="myval"), self.channel)
 
         sent_message = self.channel.broadcast_messages[-1]

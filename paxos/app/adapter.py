@@ -1,13 +1,11 @@
 from yaml import load
 
 from paxos.utils.ledger import Ledger
-from paxos.utils.state import State
 from paxos.utils.storage import Storage
 
 
 class Adapter(object):
     def __init__(self, ledger=None, deserializer=load):
-        self.state = State(Storage("pypaxos.checkpoint"))
         self.ledger = ledger if ledger is not None else Ledger()
         self._deserialize = deserializer
 

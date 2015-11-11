@@ -1,7 +1,7 @@
 PyPaxos
 ==============
 
-This is a python implementation of the [paxos algorithm](https://en.wikipedia.org/wiki/Paxos_(computer_science)). It requires python version 3.4+ to leverage [PEP 443](https://www.python.org/dev/peps/pep-0443/).
+This is a python implementation of the [paxos consensus algorithm](https://en.wikipedia.org/wiki/Paxos_(computer_science)). It requires python version 3.4+ to leverage [PEP 443](https://www.python.org/dev/peps/pep-0443/) and [PEP 3156](https://www.python.org/dev/peps/pep-3156/).
 
 Installation
 ==============
@@ -24,7 +24,7 @@ You can configure the paxos.json for a set of replicas. Below is an example conf
 ```
 {
     "address": "192.168.0.1",
-    "address_of_replicas": ["192.168.0.1", "192.168.0.2", "192.168.0.3"],
+    "address_of_replicas": ["192.168.0.2", "192.168.0.3"],
 }
 
 ```

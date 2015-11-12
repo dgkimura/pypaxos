@@ -21,6 +21,9 @@ class Role(object):
         # Notification of finished proposal
         self.notification = Notification()
 
+        # Bookmark to resume message after synced
+        self.resume = lambda: None
+
     @methoddispatch
     def receive(self, message, channel):
         error = "No function handles message: {0}.".format(message)
@@ -41,6 +44,7 @@ class Role(object):
                 channel.unicast(Sync.create(receiver=message.sender,
                                             sender=message.receiver,
                                             proposal=latest_proposal))
-                #self.notification.wait(Proposal("sync", -2))
-            func(self, message, channel, **kw)
+                self.resume = lambda: func(self, message, channel, **kw)
+            else:
+                func(self, message, channel, **kw)
         return wrapper

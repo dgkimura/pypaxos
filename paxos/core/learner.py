@@ -1,7 +1,7 @@
 # learner.py
 from paxos.core.role import Role
 from paxos.net.message import Accepted, Response, Request, Sync, Synced
-from paxos.net.proposal import Proposal, SYNC_PROPOSAL
+from paxos.net.proposal import Proposal
 from paxos.utils.ledger import Ledger, LedgerEntry
 from paxos.utils.logger import LOG
 
@@ -85,4 +85,4 @@ class Learner(Role):
                 proposal=self.state.read(Role.ACCEPTED)))
         else:
             self.state.write(Role.PROPOSED, next_proposal)
-            self.notification.send(Response.create(proposal=SYNC_PROPOSAL))
+            self.resume()

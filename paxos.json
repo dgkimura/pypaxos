@@ -1,5 +1,5 @@
 {
     "address": "",
-    "address_of_replicas": [""],
+    "address_of_replicas": [],
     "log_level": "INFO"
 }

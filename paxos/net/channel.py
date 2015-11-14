@@ -21,7 +21,7 @@ class Channel(object):
             self.receiver = Receiver(ADDRESS, self)
         if replicas is None:
             self.replicas = dict((ip, Remote(ip)) for ip in ADDRESS_OF_REPLICAS)
-            self.replicas[ADDRESS] = Local(Node(), self)
+            self.replicas[ADDRESS] = Local(Node(author=ADDRESS), self)
 
         self.receiver.start()
 

@@ -31,6 +31,22 @@ class TestAcceptor(TestCase):
         self.assertEqual(self.state.read(Acceptor.PROMISED), Proposal('A', 1))
         self.assertTrue(type(self.channel.unicast_messages[-1]) is Nack)
 
+    def test_acceptor_receivers_identical_prepare_from_same_replica(self):
+        self.role.receive(Prepare.create(proposal=Proposal('A', 1)), self.channel)
+        self.role.receive(Prepare.create(proposal=Proposal('A', 1)), self.channel)
+
+        self.assertEqual(len(self.channel.unicast_messages), 2)
+        self.assertEqual(self.state.read(Acceptor.PROMISED), Proposal('A', 1))
+        self.assertEqual([type(t) for t in self.channel.unicast_messages], [Promise, Promise])
+
+    def test_acceptor_receivers_identical_prepare_from_another_replica(self):
+        self.role.receive(Prepare.create(proposal=Proposal('A', 1)), self.channel)
+        self.role.receive(Prepare.create(proposal=Proposal('B', 1)), self.channel)
+
+        self.assertEqual(len(self.channel.unicast_messages), 2)
+        self.assertEqual(self.state.read(Acceptor.PROMISED), Proposal('A', 1))
+        self.assertEqual([type(m) for m in self.channel.unicast_messages], [Promise, Nack])
+
     def test_acceptor_receives_lower_prepare_and_then_receives_accept(self):
         self.role.receive(Prepare.create(proposal=Proposal('A', 1)), self.channel)
         self.role.receive(Prepare.create(proposal=Proposal('A', 0)), self.channel)
